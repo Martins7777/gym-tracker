@@ -3,40 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout Tracker Pro v3.4</title>
+    <title>Gym Tracker Pro v1</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #2563eb; --dark: #1e293b; --light: #f8fafc; --danger: #ef4444; --accent: #f59e0b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; color: var(--dark); }
-        nav { width: 260px; background: var(--dark); height: 100vh; color: white; padding: 20px; position: fixed; }
-        nav h2 { color: var(--primary); margin-top: 0; }
-        nav button { width: 100%; padding: 12px; margin: 8px 0; border: none; background: #334155; color: white; text-align: left; cursor: pointer; border-radius: 6px; transition: 0.3s; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; flex-direction: column; display: flex; color: var(--dark); }
+        
+        nav { width: 100%; background: var(--dark); color: white; padding: 10px 20px; position: fixed; top: 0; z-index: 1000; box-sizing: border-box; display: flex; align-items: center; gap: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        nav h2 { color: var(--primary); margin: 0; font-size: 1.2rem; min-width: 150px; }
+        .nav-links { display: flex; gap: 10px; flex-grow: 1; }
+        nav button { padding: 10px 15px; border: none; background: #334155; color: white; cursor: pointer; border-radius: 6px; transition: 0.3s; font-size: 0.9rem; }
         nav button:hover { background: var(--primary); }
-        main { margin-left: 300px; padding: 40px; width: calc(100% - 340px); }
+
+        main { margin-top: 80px; padding: 20px; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; box-sizing: border-box; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
         .grid-inputs { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #64748b; }
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        
         .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; width: 100%; }
         .btn-danger { background: var(--danger); color: white; padding: 5px 10px; font-size: 0.8rem; }
-        .session-item { border-left: 4px solid var(--primary); padding: 15px; margin-bottom: 15px; background: #fff; border-radius: 0 8px 8px 0; border: 1px solid #e2e8f0; }
-        .exercise-link { color: var(--primary); cursor: pointer; font-weight: 500; text-decoration: underline; text-decoration-color: transparent; transition: 0.2s; }
-        .exercise-link:hover { text-decoration-color: var(--primary); }
+        
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .history-table th { text-align: center; background: #f1f5f9; padding: 10px; font-size: 0.75rem; color: #64748b; text-transform: uppercase; }
+        .history-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+        .history-table td:first-child { text-align: left; font-weight: 500; }
+
+        /* Estilo para el enlace de progreso */
+        .exercise-link { color: var(--primary); text-decoration: underline; cursor: pointer; }
+
         .hidden { display: none; }
-        .edit-input { width: 60px !important; padding: 4px !important; margin: 0 2px; }
+        .edit-input { width: 70px !important; padding: 5px !important; text-align: center; border: 1px solid var(--primary); border-radius: 4px; }
+        .btn-edit { background: none; border: none; color: var(--primary); cursor: pointer; font-weight: bold; font-size: 0.85rem; padding: 5px; }
+        .btn-save { background: var(--primary); color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
 <nav>
-    <h2 style="color: var(--primary)">GYM TRACKER</h2>
-    <p style="font-size: 0.8rem; color: #94a3b8;">Monitor de Progreso</p>
-    <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
-    <button onclick="showSection('log')"> Registrar entrenamiento </button>
-    <button onclick="showSection('history')"> Historial por Dias</button>
-    <button onclick="showSection('progress')"> Graficos de Progreso</button>
-    <button onclick="showSection('io')"> Importar / Exportar</button>
+    <h2>GYM TRACKER</h2>
+    <div class="nav-links">
+        <button onclick="showSection('log')">Registro</button>
+        <button onclick="showSection('history')">Historial</button>
+        <button onclick="showSection('progress')">Progreso</button>
+        <button onclick="showSection('io')">Datos</button>
+    </div>
 </nav>
 
 <main>
@@ -44,42 +57,47 @@
         <h3>Registrar Entrenamiento</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
             <div><label>Fecha</label><input type="date" id="workoutDate"></div>
-            <div><label>Titulo de la Sesion</label><input type="text" id="sessionTitle" placeholder="Nombre de la rutina"></div>
+            <div><label>Título</label><input type="text" id="sessionTitle" placeholder="Ej: Empuje"></div>
         </div>
         <div class="grid-inputs">
-            <div>
-                <label>Ejercicio</label>
-                <input type="text" id="exName" list="exHistoryList" placeholder="Press Banca">
-                <datalist id="exHistoryList"></datalist>
-            </div>
+            <div><label>Ejercicio</label><input type="text" id="exName" list="exHistoryList"><datalist id="exHistoryList"></datalist></div>
+            <div><label>Peso (kg)</label><input type="number" id="exWeight"></div>
             <div><label>Series</label><input type="number" id="exSets"></div>
             <div><label>Reps</label><input type="number" id="exReps"></div>
-            <div><label>Peso (kg)</label><input type="number" id="exWeight"></div>
         </div>
-        <button class="btn btn-primary" onclick="addExerciseToSession()">Anadir Ejercicio a la Lista</button>
+        <button class="btn btn-primary" onclick="addExerciseToSession()">Añadir Ejercicio</button>
     </section>
 
     <section id="sec-history" class="card hidden">
-        <h3>Historial de Entrenamientos</h3>
+        <h3>Historial por Días</h3>
         <div id="historyList"></div>
     </section>
 
     <section id="sec-progress" class="card hidden">
-        <h3>Evolucion de Fuerza</h3>
+        <h3>Evolución del Ejercicio</h3>
         <select id="progressSelect" onchange="renderChart()" style="margin-bottom: 20px;"></select>
-        <canvas id="progressChart"></canvas>
+        <div style="position: relative; height:400px; width:100%;">
+            <canvas id="progressChart"></canvas>
+        </div>
+        <div id="exerciseSpecificHistory"></div>
     </section>
 
     <section id="sec-io" class="card hidden">
-        <h3>Gestion de Datos</h3>
-        <button class="btn btn-primary" style="background:var(--accent)" onclick="exportData()">Exportar JSON</button>
-        <input type="file" id="importFile" accept=".json" style="margin-top: 20px; display: block;">
+        <h3>Gestión de Datos</h3>
+        <button class="btn btn-primary" style="background:var(--accent)" onclick="exportData()">Exportar Backup (JSON)</button>
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <label>Importar Backup:</label>
+        <input type="file" id="importFile" accept=".json">
     </section>
 </main>
 
 <script>
     let workouts = JSON.parse(localStorage.getItem('gym_db')) || [];
-    document.getElementById('workoutDate').valueAsDate = new Date();
+
+    const hoy = new Date();
+    const offset = hoy.getTimezoneOffset();
+    const fechaLocal = new Date(hoy.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+    document.getElementById('workoutDate').value = fechaLocal;
 
     function showSection(id) {
         document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
@@ -88,82 +106,148 @@
         if(id === 'progress') updateExerciseSelectors();
     }
 
-    // NUEVA FUNCIÓN: Salto directo a gráfica
-    function goToProgress(exerciseName) {
+    // FUNCIÓN PARA REDIRIGIR AL PROGRESO
+    function goToProgress(name) {
         showSection('progress');
-        const select = document.getElementById('progressSelect');
-        select.value = exerciseName;
-        renderChart();
+        // Pequeño timeout para asegurar que el DOM de la sección progreso esté listo
+        setTimeout(() => {
+            const select = document.getElementById('progressSelect');
+            select.value = name;
+            renderChart();
+        }, 50);
     }
 
     function addExerciseToSession() {
         const date = document.getElementById('workoutDate').value;
         const title = document.getElementById('sessionTitle').value || "Entrenamiento";
-        const exercise = { id: Date.now(), name: document.getElementById('exName').value, sets: document.getElementById('exSets').value, reps: document.getElementById('exReps').value, weight: document.getElementById('exWeight').value };
-        if(!exercise.name || !exercise.weight) return alert("Faltan datos");
+        const ex = { id: Date.now(), name: document.getElementById('exName').value, weight: document.getElementById('exWeight').value, sets: document.getElementById('exSets').value, reps: document.getElementById('exReps').value };
+        if(!ex.name || !ex.weight) return alert("Faltan datos");
         let session = workouts.find(s => s.date === date && s.title === title);
-        if(session) { session.exercises.push(exercise); } 
-        else { workouts.push({ id: Date.now(), date: date, title: title, exercises: [exercise] }); }
+        if(session) { session.exercises.push(ex); } 
+        else { workouts.push({ id: Date.now(), date: date, title: title, exercises: [ex] }); }
         saveToStorage();
-        alert("Guardado");
-        resetInputs();
+        ['exName', 'exWeight', 'exSets', 'exReps'].forEach(id => document.getElementById(id).value = "");
+        alert("Añadido");
+        updateExerciseSelectors();
     }
 
     function saveToStorage() { localStorage.setItem('gym_db', JSON.stringify(workouts)); }
-    function resetInputs() { ['exName', 'exSets', 'exReps', 'exWeight'].forEach(id => document.getElementById(id).value = ""); }
+
+    function enableEdit(sessionId, exId, section) {
+        const row = document.getElementById(`row-${section}-${exId}`);
+        const session = workouts.find(s => s.id === sessionId);
+        const ex = session.exercises.find(e => e.id === exId);
+        const cells = row.cells;
+        
+        cells[1].innerHTML = `<input type="number" class="edit-input" id="edit-w-${exId}" value="${ex.weight}">`;
+        cells[2].innerHTML = `<input type="number" class="edit-input" id="edit-s-${exId}" value="${ex.sets}">`;
+        cells[3].innerHTML = `<input type="number" class="edit-input" id="edit-r-${exId}" value="${ex.reps}">`;
+        cells[4].innerHTML = `<button class="btn-save" onclick="saveEdit(${sessionId}, ${exId}, '${section}')">Guardar</button>`;
+    }
+
+    function saveEdit(sessionId, exId, section) {
+        const session = workouts.find(s => s.id === sessionId);
+        const ex = session.exercises.find(e => e.id === exId);
+        ex.weight = document.getElementById(`edit-w-${exId}`).value;
+        ex.sets = document.getElementById(`edit-s-${exId}`).value;
+        ex.reps = document.getElementById(`edit-r-${exId}`).value;
+        saveToStorage();
+        if(section === 'hist') renderHistory(); else renderChart();
+    }
 
     function renderHistory() {
         const container = document.getElementById('historyList');
         container.innerHTML = "";
         const sorted = [...workouts].sort((a,b) => new Date(b.date) - new Date(a.date));
+        
         sorted.forEach(session => {
+            const fEuro = session.date.split('-').reverse().join('/');
             const div = document.createElement('div');
-            div.className = 'session-item';
+            div.className = 'card';
+            div.style.padding = "15px";
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <strong>${session.date.split('-').reverse().join('/')} - ${session.title}</strong>
-                    <button class="btn btn-danger" onclick="deleteSession(${session.id})">Borrar Dia</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <strong>${fEuro} - ${session.title}</strong>
+                    <button class="btn btn-danger" onclick="deleteSession(${session.id})">Borrar Día</button>
                 </div>
-                <table style="width:100%; border-collapse:collapse;">
-                    ${session.exercises.map(ex => `
-                        <tr id="ex-row-${ex.id}">
-                            <td style="width:40%">
-                                <span class="exercise-link" onclick="goToProgress('${ex.name}')">${ex.name}</span>
-                            </td>
-                            <td id="ex-data-${ex.id}">${ex.sets}x${ex.reps} - ${ex.weight} kg</td>
-                            <td style="text-align:right">
-                                <button onclick="enableEdit(${session.id}, ${ex.id})" style="border:none; background:none; cursor:pointer; color:var(--primary); font-size:0.8rem;">Editar</button>
-                                <button onclick="deleteExercise(${session.id}, ${ex.id})" style="border:none; background:none; cursor:pointer; color:var(--danger); font-size:0.8rem; margin-left:10px;">Borrar</button>
-                            </td>
-                        </tr>`).join('')}
+                <table class="history-table">
+                    <thead><tr><th style="text-align:left">Ejercicio</th><th>Peso</th><th>Series</th><th>Reps</th><th>Acciones</th></tr></thead>
+                    <tbody>
+                        ${session.exercises.map(ex => `
+                            <tr id="row-hist-${ex.id}">
+                                <td><span class="exercise-link" onclick="goToProgress('${ex.name}')">${ex.name}</span></td>
+                                <td>${ex.weight} kg</td>
+                                <td>${ex.sets}</td>
+                                <td>${ex.reps}</td>
+                                <td>
+                                    <button class="btn-edit" onclick="enableEdit(${session.id}, ${ex.id}, 'hist')">Editar</button>
+                                    <button onclick="deleteExercise(${session.id}, ${ex.id})" style="border:none; background:none; color:var(--danger); cursor:pointer; margin-left:8px;">✕</button>
+                                </td>
+                            </tr>`).join('')}
+                    </tbody>
                 </table>`;
             container.appendChild(div);
         });
     }
 
-    function enableEdit(sessionId, exId) {
-        const session = workouts.find(s => s.id === sessionId);
-        const ex = session.exercises.find(e => e.id === exId);
-        const dataCell = document.getElementById(`ex-data-${exId}`);
-        dataCell.innerHTML = `
-            <input type="number" class="edit-input" id="edit-sets-${exId}" value="${ex.sets}"> x 
-            <input type="number" class="edit-input" id="edit-reps-${exId}" value="${ex.reps}"> - 
-            <input type="number" class="edit-input" id="edit-weight-${exId}" value="${ex.weight}"> kg
-            <button onclick="saveEdit(${sessionId}, ${exId})" style="background:var(--primary); color:white; border:none; border-radius:3px; cursor:pointer;">Ok</button>
-        `;
+    function updateExerciseSelectors() {
+        const names = [...new Set(workouts.flatMap(s => s.exercises.map(e => e.name)))].sort();
+        document.getElementById('exHistoryList').innerHTML = names.map(n => `<option value="${n}">`).join('');
+        const select = document.getElementById('progressSelect');
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Elegir ejercicio...</option>' + names.map(n => `<option value="${n}">${n}</option>`).join('');
+        if(currentVal) select.value = currentVal;
     }
 
-    function saveEdit(sessionId, exId) {
-        const session = workouts.find(s => s.id === sessionId);
-        const ex = session.exercises.find(e => e.id === exId);
-        ex.sets = document.getElementById(`edit-sets-${exId}`).value;
-        ex.reps = document.getElementById(`edit-reps-${exId}`).value;
-        ex.weight = document.getElementById(`edit-weight-${exId}`).value;
-        saveToStorage();
-        renderHistory();
+    let chart;
+    function renderChart() {
+        const name = document.getElementById('progressSelect').value;
+        const historyContainer = document.getElementById('exerciseSpecificHistory');
+        if(!name) { historyContainer.innerHTML = ""; return; }
+
+        const dataPoints = [];
+        workouts.forEach(s => s.exercises.forEach(ex => {
+            if(ex.name === name) dataPoints.push({ sessionId: s.id, exId: ex.id, date: s.date, weight: parseFloat(ex.weight), reps: parseInt(ex.reps), sets: ex.sets });
+        }));
+        dataPoints.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        if(chart) chart.destroy();
+        chart = new Chart(document.getElementById('progressChart'), {
+            data: {
+                labels: dataPoints.map(p => p.date.split('-').reverse().join('/')),
+                datasets: [
+                    { type: 'line', label: 'Peso (kg)', data: dataPoints.map(p => p.weight), borderColor: '#2563eb', yAxisID: 'yWeight', tension: 0.3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' },
+                    { type: 'bar', label: 'Reps', data: dataPoints.map(p => p.reps), backgroundColor: 'rgba(245, 158, 11, 0.3)', yAxisID: 'yReps', barThickness: 12 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    yWeight: { type: 'linear', position: 'left', title: { display: true, text: 'KG' } },
+                    yReps: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'REPS' } }
+                }
+            }
+        });
+
+        const logsSorted = [...dataPoints].sort((a,b) => new Date(b.date) - new Date(a.date));
+        historyContainer.innerHTML = `
+            <h4 style="margin-top:20px">Historial detallado: ${name}</h4>
+            <table class="history-table">
+                <thead><tr><th>Fecha</th><th>Peso</th><th>Series</th><th>Reps</th><th>Acciones</th></tr></thead>
+                <tbody>
+                    ${logsSorted.map(l => `
+                        <tr id="row-prog-${l.exId}">
+                            <td>${l.date.split('-').reverse().join('/')}</td>
+                            <td>${l.weight} kg</td>
+                            <td>${l.sets}</td>
+                            <td>${l.reps}</td>
+                            <td><button class="btn-edit" onclick="enableEdit(${l.sessionId}, ${l.exId}, 'prog')">Editar</button></td>
+                        </tr>`).join('')}
+                </tbody>
+            </table>`;
     }
 
-    function deleteSession(id) { if(confirm("¿Borrar dia?")) { workouts = workouts.filter(s => s.id !== id); saveToStorage(); renderHistory(); } }
+    function deleteSession(id) { if(confirm("¿Borrar día?")) { workouts = workouts.filter(s => s.id !== id); saveToStorage(); renderHistory(); } }
     function deleteExercise(sid, eid) { 
         const s = workouts.find(x => x.id === sid); 
         s.exercises = s.exercises.filter(e => e.id !== eid); 
@@ -171,20 +255,11 @@
         saveToStorage(); renderHistory(); 
     }
 
-    function updateExerciseSelectors() {
-        const names = [...new Set(workouts.flatMap(s => s.exercises.map(e => e.name)))];
-        document.getElementById('exHistoryList').innerHTML = names.map(n => `<option value="${n}">`).join('');
-        const select = document.getElementById('progressSelect');
-        const currentVal = select.value;
-        select.innerHTML = '<option value="">Seleccionar ejercicio...</option>' + names.map(n => `<option value="${n}">${n}</option>`).join('');
-        if(currentVal) select.value = currentVal;
-    }
-
     function exportData() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workouts));
         const dl = document.createElement('a');
         dl.setAttribute("href", dataStr);
-        dl.setAttribute("download", "gym_data.json");
+        dl.setAttribute("download", "gym_backup.json");
         dl.click();
     }
 
@@ -197,20 +272,6 @@
         };
         reader.readAsText(e.target.files[0]);
     });
-
-    let chart;
-    function renderChart() {
-        const name = document.getElementById('progressSelect').value;
-        if(!name) return;
-        const pts = [];
-        workouts.forEach(s => s.exercises.forEach(ex => { if(ex.name === name) pts.push({ x: s.date, y: parseFloat(ex.weight) }); }));
-        pts.sort((a,b) => new Date(a.x) - new Date(b.x));
-        if(chart) chart.destroy();
-        chart = new Chart(document.getElementById('progressChart'), {
-            type: 'line',
-            data: { labels: pts.map(p => p.x), datasets: [{ label: `Peso en ${name} (kg)`, data: pts.map(p => p.y), borderColor: '#2563eb', fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' }] }
-        });
-    }
 
     updateExerciseSelectors();
 </script>
