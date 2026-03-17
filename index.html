@@ -3,41 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gym Tracker Pro v1</title>
+    <title>Workout Tracker Pro v4.7 - Full Responsive</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #2563eb; --dark: #1e293b; --light: #f8fafc; --danger: #ef4444; --accent: #f59e0b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; flex-direction: column; display: flex; color: var(--dark); }
         
-        nav { width: 100%; background: var(--dark); color: white; padding: 10px 20px; position: fixed; top: 0; z-index: 1000; box-sizing: border-box; display: flex; align-items: center; gap: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        nav h2 { color: var(--primary); margin: 0; font-size: 1.2rem; min-width: 150px; }
-        .nav-links { display: flex; gap: 10px; flex-grow: 1; }
-        nav button { padding: 10px 15px; border: none; background: #334155; color: white; cursor: pointer; border-radius: 6px; transition: 0.3s; font-size: 0.9rem; }
-        nav button:hover { background: var(--primary); }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--light); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            color: var(--dark); 
+        }
+        
+        /* Navbar Adaptable */
+        nav { 
+            width: 100%; 
+            background: var(--dark); 
+            color: white; 
+            padding: 10px; 
+            position: fixed; 
+            top: 0; 
+            z-index: 1000; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            gap: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+        }
+        
+        nav h2 { color: var(--primary); margin: 0; font-size: 1.1rem; }
+        
+        .nav-links { 
+            display: flex; 
+            gap: 5px; 
+            width: 100%; 
+            justify-content: center;
+            flex-wrap: wrap;
+        }
 
-        main { margin-top: 80px; padding: 20px; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; box-sizing: border-box; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        nav button { 
+            padding: 8px 12px; 
+            border: none; 
+            background: #334155; 
+            color: white; 
+            cursor: pointer; 
+            border-radius: 6px; 
+            font-size: 0.8rem; 
+            flex: 1;
+            min-width: 80px;
+        }
+
+        main { 
+            margin-top: 110px; 
+            padding: 15px; 
+            max-width: 1000px; 
+            width: 100%; 
+            margin-left: auto; 
+            margin-right: auto; 
+            box-sizing: border-box; 
+        }
+
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
-        .grid-inputs { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #64748b; }
+        /* Grid de Registro Responsive */
+        .grid-inputs { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+        }
+
+        @media (min-width: 600px) {
+            nav { flex-direction: row; padding: 10px 20px; }
+            nav h2 { font-size: 1.2rem; }
+            nav button { font-size: 0.9rem; flex: none; }
+            main { margin-top: 80px; }
+            .grid-inputs { grid-template-columns: 2fr 1fr 1fr 1fr; }
+        }
+
+        label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; color: #64748b; }
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
         
-        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
-        .btn-danger { background: var(--danger); color: white; padding: 5px 10px; font-size: 0.8rem; }
+        .btn { padding: 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; width: 100%; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; padding: 6px 10px; font-size: 0.75rem; width: auto; }
         
-        .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .history-table th { text-align: center; background: #f1f5f9; padding: 10px; font-size: 0.75rem; color: #64748b; text-transform: uppercase; }
-        .history-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; }
-        .history-table td:first-child { text-align: left; font-weight: 500; }
+        /* Tablas Responsive */
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .history-table th { background: #f1f5f9; padding: 10px; font-size: 0.7rem; color: #64748b; text-transform: uppercase; }
+        .history-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.9rem; }
+        
+        @media (max-width: 500px) {
+            .history-table thead { display: none; }
+            .history-table tr { display: block; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 8px; }
+            .history-table td { display: flex; justify-content: space-between; text-align: right; border-bottom: none; padding: 5px 0; }
+            .history-table td::before { content: attr(data-label); font-weight: bold; text-align: left; color: #64748b; }
+            .history-table td:first-child { justify-content: center; background: #f8fafc; font-weight: bold; }
+        }
 
-        /* Estilo para el enlace de progreso */
-        .exercise-link { color: var(--primary); text-decoration: underline; cursor: pointer; }
-
+        .exercise-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: bold; }
+        .edit-input { width: 100% !important; max-width: 100px; padding: 5px; text-align: center; }
+        .btn-edit { background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 5px 15px; border-radius: 4px; }
         .hidden { display: none; }
-        .edit-input { width: 70px !important; padding: 5px !important; text-align: center; border: 1px solid var(--primary); border-radius: 4px; }
-        .btn-edit { background: none; border: none; color: var(--primary); cursor: pointer; font-weight: bold; font-size: 0.85rem; padding: 5px; }
-        .btn-save { background: var(--primary); color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -55,9 +126,9 @@
 <main>
     <section id="sec-log" class="card">
         <h3>Registrar Entrenamiento</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
             <div><label>Fecha</label><input type="date" id="workoutDate"></div>
-            <div><label>Título</label><input type="text" id="sessionTitle" placeholder="Ej: Empuje"></div>
+            <div><label>Título</label><input type="text" id="sessionTitle" placeholder="Ej: Pecho"></div>
         </div>
         <div class="grid-inputs">
             <div><label>Ejercicio</label><input type="text" id="exName" list="exHistoryList"><datalist id="exHistoryList"></datalist></div>
@@ -69,23 +140,22 @@
     </section>
 
     <section id="sec-history" class="card hidden">
-        <h3>Historial por Días</h3>
+        <h3>Historial</h3>
         <div id="historyList"></div>
     </section>
 
     <section id="sec-progress" class="card hidden">
-        <h3>Evolución del Ejercicio</h3>
+        <h3>Progreso</h3>
         <select id="progressSelect" onchange="renderChart()" style="margin-bottom: 20px;"></select>
-        <div style="position: relative; height:400px; width:100%;">
+        <div style="position: relative; height:300px; width:100%;">
             <canvas id="progressChart"></canvas>
         </div>
         <div id="exerciseSpecificHistory"></div>
     </section>
 
     <section id="sec-io" class="card hidden">
-        <h3>Gestión de Datos</h3>
-        <button class="btn btn-primary" style="background:var(--accent)" onclick="exportData()">Exportar Backup (JSON)</button>
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <h3>Datos</h3>
+        <button class="btn btn-primary" style="background:var(--accent); margin-bottom:10px" onclick="exportData()">Exportar Backup</button>
         <label>Importar Backup:</label>
         <input type="file" id="importFile" accept=".json">
     </section>
@@ -94,6 +164,7 @@
 <script>
     let workouts = JSON.parse(localStorage.getItem('gym_db')) || [];
 
+    // Inicializar fecha
     const hoy = new Date();
     const offset = hoy.getTimezoneOffset();
     const fechaLocal = new Date(hoy.getTime() - (offset*60*1000)).toISOString().split('T')[0];
@@ -104,30 +175,31 @@
         document.getElementById('sec-' + id).classList.remove('hidden');
         if(id === 'history') renderHistory();
         if(id === 'progress') updateExerciseSelectors();
+        window.scrollTo(0,0);
     }
 
-    // FUNCIÓN PARA REDIRIGIR AL PROGRESO
     function goToProgress(name) {
         showSection('progress');
-        // Pequeño timeout para asegurar que el DOM de la sección progreso esté listo
         setTimeout(() => {
-            const select = document.getElementById('progressSelect');
-            select.value = name;
+            document.getElementById('progressSelect').value = name;
             renderChart();
-        }, 50);
+        }, 100);
     }
 
     function addExerciseToSession() {
         const date = document.getElementById('workoutDate').value;
         const title = document.getElementById('sessionTitle').value || "Entrenamiento";
         const ex = { id: Date.now(), name: document.getElementById('exName').value, weight: document.getElementById('exWeight').value, sets: document.getElementById('exSets').value, reps: document.getElementById('exReps').value };
-        if(!ex.name || !ex.weight) return alert("Faltan datos");
+        
+        if(!ex.name || !ex.weight) return alert("Completa los campos");
+
         let session = workouts.find(s => s.date === date && s.title === title);
-        if(session) { session.exercises.push(ex); } 
-        else { workouts.push({ id: Date.now(), date: date, title: title, exercises: [ex] }); }
+        if(session) session.exercises.push(ex);
+        else workouts.push({ id: Date.now(), date: date, title: title, exercises: [ex] });
+        
         saveToStorage();
         ['exName', 'exWeight', 'exSets', 'exReps'].forEach(id => document.getElementById(id).value = "");
-        alert("Añadido");
+        alert("¡Guardado!");
         updateExerciseSelectors();
     }
 
@@ -137,12 +209,12 @@
         const row = document.getElementById(`row-${section}-${exId}`);
         const session = workouts.find(s => s.id === sessionId);
         const ex = session.exercises.find(e => e.id === exId);
-        const cells = row.cells;
         
+        const cells = row.cells;
         cells[1].innerHTML = `<input type="number" class="edit-input" id="edit-w-${exId}" value="${ex.weight}">`;
         cells[2].innerHTML = `<input type="number" class="edit-input" id="edit-s-${exId}" value="${ex.sets}">`;
         cells[3].innerHTML = `<input type="number" class="edit-input" id="edit-r-${exId}" value="${ex.reps}">`;
-        cells[4].innerHTML = `<button class="btn-save" onclick="saveEdit(${sessionId}, ${exId}, '${section}')">Guardar</button>`;
+        cells[4].innerHTML = `<button class="btn-save" onclick="saveEdit(${sessionId}, ${exId}, '${section}')">OK</button>`;
     }
 
     function saveEdit(sessionId, exId, section) {
@@ -167,21 +239,21 @@
             div.style.padding = "15px";
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <strong>${fEuro} - ${session.title}</strong>
-                    <button class="btn btn-danger" onclick="deleteSession(${session.id})">Borrar Día</button>
+                    <small><strong>${fEuro}</strong> - ${session.title}</small>
+                    <button class="btn-danger" onclick="deleteSession(${session.id})">Eliminar</button>
                 </div>
                 <table class="history-table">
-                    <thead><tr><th style="text-align:left">Ejercicio</th><th>Peso</th><th>Series</th><th>Reps</th><th>Acciones</th></tr></thead>
+                    <thead><tr><th>Ejercicio</th><th>Peso</th><th>Sets</th><th>Reps</th><th>Acción</th></tr></thead>
                     <tbody>
                         ${session.exercises.map(ex => `
                             <tr id="row-hist-${ex.id}">
-                                <td><span class="exercise-link" onclick="goToProgress('${ex.name}')">${ex.name}</span></td>
-                                <td>${ex.weight} kg</td>
-                                <td>${ex.sets}</td>
-                                <td>${ex.reps}</td>
-                                <td>
+                                <td data-label="Ejercicio"><span class="exercise-link" onclick="goToProgress('${ex.name}')">${ex.name}</span></td>
+                                <td data-label="Peso">${ex.weight} kg</td>
+                                <td data-label="Sets">${ex.sets}</td>
+                                <td data-label="Reps">${ex.reps}</td>
+                                <td data-label="Acción">
                                     <button class="btn-edit" onclick="enableEdit(${session.id}, ${ex.id}, 'hist')">Editar</button>
-                                    <button onclick="deleteExercise(${session.id}, ${ex.id})" style="border:none; background:none; color:var(--danger); cursor:pointer; margin-left:8px;">✕</button>
+                                    <button onclick="deleteExercise(${session.id}, ${ex.id})" style="border:none; background:none; color:var(--danger); cursor:pointer; margin-left:10px">✕</button>
                                 </td>
                             </tr>`).join('')}
                     </tbody>
@@ -195,7 +267,7 @@
         document.getElementById('exHistoryList').innerHTML = names.map(n => `<option value="${n}">`).join('');
         const select = document.getElementById('progressSelect');
         const currentVal = select.value;
-        select.innerHTML = '<option value="">Elegir ejercicio...</option>' + names.map(n => `<option value="${n}">${n}</option>`).join('');
+        select.innerHTML = '<option value="">Selecciona ejercicio...</option>' + names.map(n => `<option value="${n}">${n}</option>`).join('');
         if(currentVal) select.value = currentVal;
     }
 
@@ -216,38 +288,38 @@
             data: {
                 labels: dataPoints.map(p => p.date.split('-').reverse().join('/')),
                 datasets: [
-                    { type: 'line', label: 'Peso (kg)', data: dataPoints.map(p => p.weight), borderColor: '#2563eb', yAxisID: 'yWeight', tension: 0.3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' },
-                    { type: 'bar', label: 'Reps', data: dataPoints.map(p => p.reps), backgroundColor: 'rgba(245, 158, 11, 0.3)', yAxisID: 'yReps', barThickness: 12 }
+                    { type: 'line', label: 'Carga (kg)', data: dataPoints.map(p => p.weight), borderColor: '#2563eb', yAxisID: 'yWeight', tension: 0.3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' },
+                    { type: 'bar', label: 'Reps', data: dataPoints.map(p => p.reps), backgroundColor: 'rgba(245, 158, 11, 0.3)', yAxisID: 'yReps', barThickness: 10 }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 scales: {
-                    yWeight: { type: 'linear', position: 'left', title: { display: true, text: 'KG' } },
-                    yReps: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'REPS' } }
+                    yWeight: { type: 'linear', position: 'left', title: { display: true, text: 'kg' } },
+                    yReps: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'reps' } }
                 }
             }
         });
 
         const logsSorted = [...dataPoints].sort((a,b) => new Date(b.date) - new Date(a.date));
         historyContainer.innerHTML = `
-            <h4 style="margin-top:20px">Historial detallado: ${name}</h4>
+            <h4 style="margin:20px 0 10px 0">Historial: ${name}</h4>
             <table class="history-table">
-                <thead><tr><th>Fecha</th><th>Peso</th><th>Series</th><th>Reps</th><th>Acciones</th></tr></thead>
+                <thead><tr><th>Fecha</th><th>Peso</th><th>Sets</th><th>Reps</th><th>Acción</th></tr></thead>
                 <tbody>
                     ${logsSorted.map(l => `
                         <tr id="row-prog-${l.exId}">
-                            <td>${l.date.split('-').reverse().join('/')}</td>
-                            <td>${l.weight} kg</td>
-                            <td>${l.sets}</td>
-                            <td>${l.reps}</td>
-                            <td><button class="btn-edit" onclick="enableEdit(${l.sessionId}, ${l.exId}, 'prog')">Editar</button></td>
+                            <td data-label="Fecha">${l.date.split('-').reverse().join('/')}</td>
+                            <td data-label="Peso">${l.weight} kg</td>
+                            <td data-label="Sets">${l.sets}</td>
+                            <td data-label="Reps">${l.reps}</td>
+                            <td data-label="Acción"><button class="btn-edit" onclick="enableEdit(${l.sessionId}, ${l.exId}, 'prog')">Editar</button></td>
                         </tr>`).join('')}
                 </tbody>
             </table>`;
     }
 
-    function deleteSession(id) { if(confirm("¿Borrar día?")) { workouts = workouts.filter(s => s.id !== id); saveToStorage(); renderHistory(); } }
+    function deleteSession(id) { if(confirm("¿Eliminar día completo?")) { workouts = workouts.filter(s => s.id !== id); saveToStorage(); renderHistory(); } }
     function deleteExercise(sid, eid) { 
         const s = workouts.find(x => x.id === sid); 
         s.exercises = s.exercises.filter(e => e.id !== eid); 
@@ -259,7 +331,7 @@
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workouts));
         const dl = document.createElement('a');
         dl.setAttribute("href", dataStr);
-        dl.setAttribute("download", "gym_backup.json");
+        dl.setAttribute("download", "backup_gym.json");
         dl.click();
     }
 
