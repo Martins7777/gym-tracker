@@ -109,6 +109,154 @@
         .btn-edit { background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; }
         .btn-save { background: var(--primary); color: white; border: none; padding: 5px 15px; border-radius: 4px; }
         .hidden { display: none; }
+
+        /* Panel historial ejercicio en registro */
+        #exHistoryPanel {
+            margin-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 16px;
+            display: none;
+        }
+        #exHistoryPanel .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        #exHistoryPanel .panel-header .panel-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        #exHistoryPanel .panel-header .ex-name-badge {
+            background: #eff6ff;
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+            border: 1px solid #bfdbfe;
+        }
+        #exHistoryRows {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .ex-hist-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+        .ex-hist-row:first-child {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+        .ex-hist-row .ex-hist-date {
+            color: #64748b;
+            font-size: 0.78rem;
+        }
+        .ex-hist-row .ex-hist-val {
+            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        .ex-hist-row .ex-hist-val span {
+            font-weight: 400;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .ex-hist-row:first-child .ex-hist-val {
+            color: var(--primary);
+        }
+        .ex-hist-empty {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            padding: 12px 0;
+        }
+        .ex-hist-col-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            padding: 0 12px;
+            margin-bottom: 4px;
+        }
+        .ex-hist-col-header span {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            text-align: center;
+        }
+        .ex-hist-col-header span:first-child { text-align: left; }
+
+        /* ===== MEDIDAS ===== */
+        .medidas-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        @media (min-width: 600px) {
+            .medidas-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .medida-input-group { display: flex; flex-direction: column; }
+        .medida-input-group label { font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .medida-input-group input { padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; width: 100%; }
+
+        .medidas-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .medida-chip {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1.5px solid #cbd5e1;
+            background: white;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .medida-chip.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        .medida-hist-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .medida-hist-table th { background: #f1f5f9; padding: 9px 10px; font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+        .medida-hist-table td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.88rem; }
+        .medida-hist-table tr:first-child td { font-weight: 700; color: var(--primary); }
+        .medida-diff-pos { color: #16a34a; font-size: 0.78rem; font-weight: 600; }
+        .medida-diff-neg { color: var(--danger); font-size: 0.78rem; font-weight: 600; }
+        .medida-diff-neu { color: #94a3b8; font-size: 0.78rem; }
+        .medida-stat-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .medida-stat-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 10px;
+            text-align: center;
+        }
+        .medida-stat-card .stat-label { font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .medida-stat-card .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--dark); }
+        .medida-stat-card .stat-unit { font-size: 0.72rem; color: #94a3b8; }
     </style>
 </head>
 <body>
@@ -120,6 +268,7 @@
         <button onclick="showSection('history')">Historial</button>
         <button onclick="showSection('progress')">Progreso</button>
         <button onclick="showSection('io')">Datos</button>
+        <button onclick="showSection('medidas')">Medidas</button>
     </div>
 </nav>
 
@@ -137,6 +286,21 @@
             <div><label>Reps</label><input type="number" id="exReps"></div>
         </div>
         <button class="btn btn-primary" onclick="addExerciseToSession()">Añadir Ejercicio</button>
+
+        <!-- Panel historial del ejercicio -->
+        <div id="exHistoryPanel">
+            <div class="panel-header">
+                <span class="panel-title">Últimas sesiones de</span>
+                <span class="ex-name-badge" id="exNameBadge"></span>
+            </div>
+            <div class="ex-hist-col-header">
+                <span>Fecha</span>
+                <span>Peso</span>
+                <span>Series</span>
+                <span>Reps</span>
+            </div>
+            <div id="exHistoryRows"></div>
+        </div>
     </section>
 
     <section id="sec-history" class="card hidden">
@@ -159,6 +323,51 @@
         <label>Importar Backup:</label>
         <input type="file" id="importFile" accept=".json">
     </section>
+
+    <section id="sec-medidas" class="card hidden">
+        <h3>Medidas Corporales</h3>
+
+        <!-- Formulario registro -->
+        <div style="margin-bottom: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <label style="margin:0; font-size:0.8rem; font-weight:700; color:#64748b;">FECHA</label>
+                <input type="date" id="medidaDate" style="width:auto; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem;">
+            </div>
+            <div class="medidas-grid">
+                <div class="medida-input-group"><label>Hombros (cm)</label><input type="number" step="0.1" id="med-hombros" placeholder="—"></div>
+                <div class="medida-input-group"><label>Pecho (cm)</label><input type="number" step="0.1" id="med-pecho" placeholder="—"></div>
+                <div class="medida-input-group"><label>Bíceps (cm)</label><input type="number" step="0.1" id="med-biceps" placeholder="—"></div>
+                <div class="medida-input-group"><label>Cintura (cm)</label><input type="number" step="0.1" id="med-cintura" placeholder="—"></div>
+                <div class="medida-input-group"><label>Muslo (cm)</label><input type="number" step="0.1" id="med-muslo" placeholder="—"></div>
+                <div class="medida-input-group"><label>Gemelo (cm)</label><input type="number" step="0.1" id="med-gemelo" placeholder="—"></div>
+            </div>
+            <button class="btn btn-primary" onclick="saveMedidas()">Guardar Medidas</button>
+        </div>
+
+        <!-- Selector de zona -->
+        <div style="border-top:1px solid #e2e8f0; padding-top:20px;">
+            <p style="font-size:0.78rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 10px 0;">Ver evolución de:</p>
+            <div class="medidas-selector">
+                <button class="medida-chip active" onclick="selectMedida('hombros', this)">Hombros</button>
+                <button class="medida-chip" onclick="selectMedida('pecho', this)">Pecho</button>
+                <button class="medida-chip" onclick="selectMedida('biceps', this)">Bíceps</button>
+                <button class="medida-chip" onclick="selectMedida('cintura', this)">Cintura</button>
+                <button class="medida-chip" onclick="selectMedida('muslo', this)">Muslo</button>
+                <button class="medida-chip" onclick="selectMedida('gemelo', this)">Gemelo</button>
+            </div>
+
+            <!-- Stat cards -->
+            <div class="medida-stat-cards" id="medidaStatCards"></div>
+
+            <!-- Gráfica -->
+            <div style="position:relative; height:260px; width:100%;">
+                <canvas id="medidaChart"></canvas>
+            </div>
+
+            <!-- Tabla historial -->
+            <div id="medidaHistTable"></div>
+        </div>
+    </section>
 </main>
 
 <script>
@@ -175,6 +384,7 @@
         document.getElementById('sec-' + id).classList.remove('hidden');
         if(id === 'history') renderHistory();
         if(id === 'progress') updateExerciseSelectors();
+        if(id === 'medidas') { renderMedidasChart(activeMedida); }
         window.scrollTo(0,0);
     }
 
@@ -346,6 +556,204 @@
     });
 
     updateExerciseSelectors();
+
+    // Panel historial ejercicio en Registro
+    function renderExHistoryPanel(name) {
+        const panel = document.getElementById('exHistoryPanel');
+        const rowsContainer = document.getElementById('exHistoryRows');
+        const badge = document.getElementById('exNameBadge');
+        const trimmed = name ? name.trim() : '';
+        if (!trimmed) { panel.style.display = 'none'; return; }
+        const entries = [];
+        workouts.forEach(s => {
+            s.exercises.forEach(ex => {
+                if (ex.name.toLowerCase() === trimmed.toLowerCase()) {
+                    entries.push({ date: s.date, weight: ex.weight, sets: ex.sets, reps: ex.reps });
+                }
+            });
+        });
+        entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const recent = entries.slice(0, 5);
+        badge.textContent = trimmed;
+        panel.style.display = 'block';
+        if (recent.length === 0) {
+            rowsContainer.innerHTML = '<div class="ex-hist-empty">Sin registros previos para este ejercicio</div>';
+            return;
+        }
+        rowsContainer.innerHTML = recent.map((e, i) => {
+            const fDate = e.date.split('-').reverse().join('/');
+            const isLatest = i === 0 ? '&nbsp;<span style="color:var(--primary);font-size:0.7rem;font-weight:700">&#9650; ultimo</span>' : '';
+            return `<div class="ex-hist-row">
+                <span class="ex-hist-date">${fDate}${isLatest}</span>
+                <span class="ex-hist-val">${e.weight}&thinsp;<span>kg</span></span>
+                <span class="ex-hist-val">${e.sets || '--'}&thinsp;<span>x</span></span>
+                <span class="ex-hist-val">${e.reps || '--'}&thinsp;<span>reps</span></span>
+            </div>`;
+        }).join('');
+    }
+
+    document.getElementById('exName').addEventListener('input', function() {
+        renderExHistoryPanel(this.value);
+    });
+    // ===== MEDIDAS =====
+    let medidas = JSON.parse(localStorage.getItem('gym_medidas')) || [];
+    let activeMedida = 'hombros';
+    let medidaChart = null;
+
+    const MEDIDA_LABELS = {
+        hombros: 'Hombros', pecho: 'Pecho', biceps: 'Bíceps',
+        cintura: 'Cintura', muslo: 'Muslo', gemelo: 'Gemelo'
+    };
+    const MEDIDA_COLORS = {
+        hombros: '#2563eb', pecho: '#7c3aed', biceps: '#0891b2',
+        cintura: '#ef4444', muslo: '#16a34a', gemelo: '#d97706'
+    };
+
+    // Inicializar fecha medidas
+    (function() {
+        const hoy = new Date();
+        const offset = hoy.getTimezoneOffset();
+        const fechaLocal = new Date(hoy.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+        const el = document.getElementById('medidaDate');
+        if(el) el.value = fechaLocal;
+    })();
+
+    function saveMedidas() {
+        const date = document.getElementById('medidaDate').value;
+        if(!date) return alert('Selecciona una fecha');
+
+        const campos = ['hombros','pecho','biceps','cintura','muslo','gemelo'];
+        const entry = { id: Date.now(), date: date };
+        let alguno = false;
+        campos.forEach(c => {
+            const val = document.getElementById('med-' + c).value;
+            if(val !== '') { entry[c] = parseFloat(val); alguno = true; }
+        });
+        if(!alguno) return alert('Introduce al menos una medida');
+
+        // Si existe entrada del mismo día, actualizar
+        const existIdx = medidas.findIndex(m => m.date === date);
+        if(existIdx >= 0) {
+            campos.forEach(c => { if(entry[c] !== undefined) medidas[existIdx][c] = entry[c]; });
+        } else {
+            medidas.push(entry);
+        }
+
+        localStorage.setItem('gym_medidas', JSON.stringify(medidas));
+        campos.forEach(c => document.getElementById('med-' + c).value = '');
+        alert('Medidas guardadas');
+        renderMedidasChart(activeMedida);
+    }
+
+    function selectMedida(key, btn) {
+        document.querySelectorAll('.medida-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeMedida = key;
+        renderMedidasChart(key);
+    }
+
+    function renderMedidasChart(key) {
+        const color = MEDIDA_COLORS[key] || '#2563eb';
+        const label = MEDIDA_LABELS[key] || key;
+
+        // Filtrar entradas que tengan este campo
+        const pts = medidas
+            .filter(m => m[key] !== undefined)
+            .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        // Stat cards
+        const statsEl = document.getElementById('medidaStatCards');
+        if(pts.length === 0) {
+            statsEl.innerHTML = '';
+            document.getElementById('medidaHistTable').innerHTML = '<p style="text-align:center;color:#94a3b8;margin:20px 0;font-size:0.88rem;">Sin registros aún para ' + label + '</p>';
+            if(medidaChart) { medidaChart.destroy(); medidaChart = null; }
+            return;
+        }
+
+        const vals = pts.map(p => p[key]);
+        const ultimo = vals[vals.length-1];
+        const primero = vals[0];
+        const maximo = Math.max(...vals);
+        const minimo = Math.min(...vals);
+        const cambio = (ultimo - primero).toFixed(1);
+        const cambioStr = cambio > 0 ? '+' + cambio : '' + cambio;
+
+        statsEl.innerHTML = `
+            <div class="medida-stat-card">
+                <div class="stat-label">Último</div>
+                <div class="stat-value">${ultimo}</div>
+                <div class="stat-unit">cm</div>
+            </div>
+            <div class="medida-stat-card">
+                <div class="stat-label">Cambio total</div>
+                <div class="stat-value" style="color:${cambio >= 0 ? '#16a34a' : '#ef4444'}">${cambioStr}</div>
+                <div class="stat-unit">cm</div>
+            </div>
+            <div class="medida-stat-card">
+                <div class="stat-label">Registros</div>
+                <div class="stat-value">${pts.length}</div>
+                <div class="stat-unit">entradas</div>
+            </div>`;
+
+        // Chart
+        if(medidaChart) medidaChart.destroy();
+        medidaChart = new Chart(document.getElementById('medidaChart'), {
+            type: 'line',
+            data: {
+                labels: pts.map(p => p.date.split('-').reverse().join('/')),
+                datasets: [{
+                    label: label + ' (cm)',
+                    data: vals,
+                    borderColor: color,
+                    backgroundColor: color + '18',
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: color,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        title: { display: true, text: 'cm', color: '#94a3b8', font: { size: 11 } },
+                        ticks: { font: { size: 11 } }
+                    },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+
+        // Tabla historial
+        const sorted = [...pts].reverse();
+        const rows = sorted.map((p, i) => {
+            const prev = sorted[i+1];
+            let diff = '';
+            if(prev && prev[key] !== undefined) {
+                const d = (p[key] - prev[key]).toFixed(1);
+                if(d > 0) diff = `<span class="medida-diff-pos">▲ +${d}</span>`;
+                else if(d < 0) diff = `<span class="medida-diff-neg">▼ ${d}</span>`;
+                else diff = `<span class="medida-diff-neu">— 0</span>`;
+            }
+            const isFirst = i === 0;
+            return `<tr>
+                <td style="${isFirst ? 'font-weight:700;color:var(--primary)' : ''}">${p.date.split('-').reverse().join('/')}</td>
+                <td style="${isFirst ? 'font-weight:700;color:var(--primary)' : ''}">${p[key]} cm</td>
+                <td>${diff}</td>
+            </tr>`;
+        }).join('');
+
+        document.getElementById('medidaHistTable').innerHTML = `
+            <table class="medida-hist-table" style="margin-top:20px">
+                <thead><tr><th>Fecha</th><th>${label}</th><th>Variación</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+    }
+
 </script>
 </body>
 </html>
