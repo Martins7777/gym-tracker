@@ -34,7 +34,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
         }
         
-        nav h2 { color: var(--primary); margin: 0; font-size: 1.1rem; }
+        nav h2 { color: var(--primary); margin: 0; font-size: 1.1rem; white-space: nowrap; }
         
         .nav-links { 
             display: flex; 
@@ -346,22 +346,21 @@
 <body>
 
 <nav>
-    <h2>GYM TRACKER</h2>
+    <h2>GYM TRACKER by AMS</h2>
     <div class="nav-links">
-        <button onclick="showSection('log')">+Registro</button>
         <button onclick="showSection('history')">Historial</button>
         <button onclick="showSection('progress')">Progreso</button>
         <button onclick="showSection('io')">Datos</button>
         <button onclick="showSection('medidas')">Medidas</button>
+		<button onclick="showSection('log')">+Registro</button>
     </div>
 </nav>
 
 <main>
     <section id="sec-log" class="card">
         <h3>Registrar Entrenamiento</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-            <div><label>Fecha</label><input type="date" id="workoutDate"></div>
-            <div><label>Título</label><input type="text" id="sessionTitle" placeholder="Ej: Pecho"></div>
+        <div style="margin-bottom: 15px;">
+            <div><label>Fecha</label><input type="date" id="workoutDate" style="max-width:220px"></div>
         </div>
         <div class="grid-inputs">
             <div><label>Ejercicio</label><input type="text" id="exName" list="exHistoryList"><datalist id="exHistoryList"></datalist></div>
@@ -482,15 +481,14 @@
 
     function addExerciseToSession() {
         const date = document.getElementById('workoutDate').value;
-        const title = document.getElementById('sessionTitle').value || "Entrenamiento";
         const ex = { id: Date.now(), name: document.getElementById('exName').value, weight: document.getElementById('exWeight').value, sets: document.getElementById('exSets').value, reps: document.getElementById('exReps').value };
-        
+
         if(!ex.name || !ex.weight) return alert("Completa los campos");
 
-        let session = workouts.find(s => s.date === date && s.title === title);
+        let session = workouts.find(s => s.date === date);
         if(session) session.exercises.push(ex);
-        else workouts.push({ id: Date.now(), date: date, title: title, exercises: [ex] });
-        
+        else workouts.push({ id: Date.now(), date: date, exercises: [ex] });
+
         saveToStorage();
         ['exName', 'exWeight', 'exSets', 'exReps'].forEach(id => document.getElementById(id).value = "");
         alert("¡Guardado!");
@@ -544,8 +542,6 @@
                 <div class="session-header">
                     <div class="session-header-info">
                         <span class="session-header-date">${fEuro}</span>
-                        <span class="session-header-title">${session.title}</span>
-                        <span class="session-header-count">${n} ejercicio${n !== 1 ? 's' : ''}</span>
                     </div>
                     <button class="btn-delete-session" onclick="deleteSession(${session.id})">🗑 Eliminar</button>
                 </div>
@@ -645,7 +641,13 @@
     document.getElementById('importFile').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            workouts = JSON.parse(event.target.result);
+            const parsed = JSON.parse(event.target.result);
+            // Normalise: strip title field from every session
+            workouts = parsed.map(s => ({
+                id: s.id,
+                date: s.date,
+                exercises: s.exercises || []
+            }));
             saveToStorage();
             location.reload();
         };
