@@ -91,24 +91,112 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-danger { background: var(--danger); color: white; padding: 6px 10px; font-size: 0.75rem; width: auto; }
         
-        /* Tablas Responsive */
+        /* ── HISTORIAL ── */
+        .session-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 16px;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+        .session-header-info { display: flex; flex-direction: column; gap: 2px; }
+        .session-header-date { font-size: 0.75rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.05em; }
+        .session-header-title { font-size: 0.97rem; font-weight: 700; color: #f1f5f9; }
+        .session-header-count {
+            display: inline-block; margin-top: 3px;
+            font-size: 0.68rem; font-weight: 600; color: #64748b;
+            background: #0f172a; padding: 2px 8px; border-radius: 10px;
+        }
+        .btn-delete-session {
+            background: rgba(239,68,68,0.12);
+            color: #fca5a5;
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 8px;
+            padding: 6px 13px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .btn-delete-session:hover { background: rgba(239,68,68,0.28); }
+
+        /* filas de ejercicio */
+        .ex-rows { padding: 4px 14px 10px; }
+        .ex-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 2px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .ex-row:last-child { border-bottom: none; }
+        .ex-row-name { flex: 1; min-width: 0; }
+        .exercise-link {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .exercise-link::after { content: "↗"; font-size: 0.68rem; opacity: 0.55; }
+        .exercise-link:hover { color: #1d4ed8; }
+        .ex-pills { display: flex; gap: 5px; flex-shrink: 0; }
+        .ex-pill {
+            background: #f1f5f9;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: #334155;
+            white-space: nowrap;
+        }
+        .ex-pill em { font-style: normal; font-weight: 400; color: #94a3b8; font-size: 0.7rem; }
+        .ex-row-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .btn-edit {
+            border: 1px solid #e2e8f0;
+            background: none;
+            color: var(--primary);
+            font-size: 0.73rem;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 4px 9px;
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+        .btn-edit:hover { background: #eff6ff; }
+        .btn-del-ex {
+            border: 1px solid #fee2e2;
+            background: none;
+            color: #ef4444;
+            font-size: 0.78rem;
+            border-radius: 6px;
+            padding: 4px 7px;
+            cursor: pointer;
+            line-height: 1;
+            transition: background 0.12s;
+        }
+        .btn-del-ex:hover { background: #fee2e2; }
+
+        /* edit mode */
+        .edit-input { width: 58px !important; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 0.83rem; text-align: center; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.77rem; font-weight: 600; cursor: pointer; }
+        .hidden { display: none; }
+
+        /* tabla progreso (sin cambios) */
         .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .history-table th { background: #f1f5f9; padding: 10px; font-size: 0.7rem; color: #64748b; text-transform: uppercase; }
         .history-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.9rem; }
-        
-        @media (max-width: 500px) {
-            .history-table thead { display: none; }
-            .history-table tr { display: block; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 8px; }
-            .history-table td { display: flex; justify-content: space-between; text-align: right; border-bottom: none; padding: 5px 0; }
-            .history-table td::before { content: attr(data-label); font-weight: bold; text-align: left; color: #64748b; }
-            .history-table td:first-child { justify-content: center; background: #f8fafc; font-weight: bold; }
-        }
-
-        .exercise-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: bold; }
-        .edit-input { width: 100% !important; max-width: 100px; padding: 5px; text-align: center; }
-        .btn-edit { background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 5px 15px; border-radius: 4px; }
-        .hidden { display: none; }
 
         /* Panel historial ejercicio en registro */
         #exHistoryPanel {
@@ -419,12 +507,21 @@
         const row = document.getElementById(`row-${section}-${exId}`);
         const session = workouts.find(s => s.id === sessionId);
         const ex = session.exercises.find(e => e.id === exId);
-        
-        const cells = row.cells;
-        cells[1].innerHTML = `<input type="number" class="edit-input" id="edit-w-${exId}" value="${ex.weight}">`;
-        cells[2].innerHTML = `<input type="number" class="edit-input" id="edit-s-${exId}" value="${ex.sets}">`;
-        cells[3].innerHTML = `<input type="number" class="edit-input" id="edit-r-${exId}" value="${ex.reps}">`;
-        cells[4].innerHTML = `<button class="btn-save" onclick="saveEdit(${sessionId}, ${exId}, '${section}')">OK</button>`;
+
+        if (section === 'hist') {
+            row.querySelector('.ex-pills').innerHTML = `
+                <input type="number" class="edit-input" id="edit-w-${exId}" value="${ex.weight}" placeholder="kg">
+                <input type="number" class="edit-input" id="edit-s-${exId}" value="${ex.sets}" placeholder="sets">
+                <input type="number" class="edit-input" id="edit-r-${exId}" value="${ex.reps}" placeholder="reps">`;
+            row.querySelector('.ex-row-btns').innerHTML =
+                `<button class="btn-save" onclick="saveEdit(${sessionId}, ${exId}, 'hist')">OK</button>`;
+        } else {
+            const cells = row.cells;
+            cells[1].innerHTML = `<input type="number" class="edit-input" id="edit-w-${exId}" value="${ex.weight}">`;
+            cells[2].innerHTML = `<input type="number" class="edit-input" id="edit-s-${exId}" value="${ex.sets}">`;
+            cells[3].innerHTML = `<input type="number" class="edit-input" id="edit-r-${exId}" value="${ex.reps}">`;
+            cells[4].innerHTML = `<button class="btn-save" onclick="saveEdit(${sessionId}, ${exId}, '${section}')">OK</button>`;
+        }
     }
 
     function saveEdit(sessionId, exId, section) {
@@ -441,33 +538,37 @@
         const container = document.getElementById('historyList');
         container.innerHTML = "";
         const sorted = [...workouts].sort((a,b) => new Date(b.date) - new Date(a.date));
-        
+
         sorted.forEach(session => {
             const fEuro = session.date.split('-').reverse().join('/');
+            const n = session.exercises.length;
             const div = document.createElement('div');
-            div.className = 'card';
-            div.style.padding = "15px";
+            div.className = 'session-card';
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <small><strong>${fEuro}</strong> - ${session.title}</small>
-                    <button class="btn-danger" onclick="deleteSession(${session.id})">Eliminar</button>
+                <div class="session-header">
+                    <div class="session-header-info">
+                        <span class="session-header-date">${fEuro}</span>
+                        <span class="session-header-title">${session.title}</span>
+                        <span class="session-header-count">${n} ejercicio${n !== 1 ? 's' : ''}</span>
+                    </div>
+                    <button class="btn-delete-session" onclick="deleteSession(${session.id})">🗑 Eliminar</button>
                 </div>
-                <table class="history-table">
-                    <thead><tr><th>Ejercicio</th><th>Peso</th><th>Sets</th><th>Reps</th><th>Acción</th></tr></thead>
-                    <tbody>
-                        ${session.exercises.map(ex => `
-                            <tr id="row-hist-${ex.id}">
-                                <td data-label="Ejercicio"><span class="exercise-link" onclick="goToProgress('${ex.name}')">${ex.name}</span></td>
-                                <td data-label="Peso">${ex.weight} kg</td>
-                                <td data-label="Sets">${ex.sets}</td>
-                                <td data-label="Reps">${ex.reps}</td>
-                                <td data-label="Acción">
-                                    <button class="btn-edit" onclick="enableEdit(${session.id}, ${ex.id}, 'hist')">Editar</button>
-                                    <button onclick="deleteExercise(${session.id}, ${ex.id})" style="border:none; background:none; color:var(--danger); cursor:pointer; margin-left:10px">✕</button>
-                                </td>
-                            </tr>`).join('')}
-                    </tbody>
-                </table>`;
+                <div class="ex-rows">
+                    ${session.exercises.map(ex => `
+                        <div class="ex-row" id="row-hist-${ex.id}">
+                            <div class="ex-row-name">
+                                <span class="exercise-link" onclick="goToProgress('${ex.name}')">${ex.name}</span>
+                            </div>
+                            <div class="ex-pills">
+                                <span class="ex-pill">${ex.weight} <em>kg</em></span>
+                                <span class="ex-pill">${ex.sets}<em>×</em>${ex.reps}</span>
+                            </div>
+                            <div class="ex-row-btns">
+                                <button class="btn-edit" onclick="enableEdit(${session.id}, ${ex.id}, 'hist')">Editar</button>
+                                <button class="btn-del-ex" onclick="deleteExercise(${session.id}, ${ex.id})">✕</button>
+                            </div>
+                        </div>`).join('')}
+                </div>`;
             container.appendChild(div);
         });
     }
