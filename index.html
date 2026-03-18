@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout Tracker Pro v4.7 - Full Responsive</title>
+    <title>Gym tracker v.7</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #2563eb; --dark: #1e293b; --light: #f8fafc; --danger: #ef4444; --accent: #f59e0b; }
@@ -103,17 +103,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 13px 16px;
+            padding: 6px 16px;
             background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         }
-        .session-header-info { display: flex; flex-direction: column; gap: 2px; }
-        .session-header-date { font-size: 0.75rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.05em; }
-        .session-header-title { font-size: 0.97rem; font-weight: 700; color: #f1f5f9; }
-        .session-header-count {
-            display: inline-block; margin-top: 3px;
-            font-size: 0.68rem; font-weight: 600; color: #64748b;
-            background: #0f172a; padding: 2px 8px; border-radius: 10px;
-        }
+        .session-header-info { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+        .session-header-date { font-size: 0.90rem; font-weight: 700; color: #f1f5f9; letter-spacing: 0.05em; }
+        .session-header-title { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
+
         .btn-delete-session {
             background: rgba(239,68,68,0.12);
             color: #fca5a5;
@@ -352,7 +348,7 @@
 <nav>
     <h2>GYM TRACKER</h2>
     <div class="nav-links">
-        <button onclick="showSection('log')">Registro</button>
+        <button onclick="showSection('log')">+Registro</button>
         <button onclick="showSection('history')">Historial</button>
         <button onclick="showSection('progress')">Progreso</button>
         <button onclick="showSection('io')">Datos</button>
