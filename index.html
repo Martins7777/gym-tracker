@@ -359,12 +359,29 @@
         .record-crown { margin-right: 8px; font-size: 1rem; }
         .section-divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
 
-        /* ===== GOOGLE SHEETS SYNC ===== */
-        #syncOverlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:14px; }
-        #syncOverlay.active { display:flex; }
-        .sync-spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.15); border-top-color:#2563eb; border-radius:50%; animation:spin 0.7s linear infinite; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .sync-label { color:white; font-size:0.85rem; font-weight:600; }
+        /* ===== SYNC BANNER (no invasivo) ===== */
+        #syncBanner {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #1e293b; color: white;
+            padding: 8px 14px; border-radius: 10px;
+            font-size: 0.78rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            z-index: 9999; pointer-events: none;
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        #syncBanner.visible { opacity: 1; transform: translateY(0); }
+        #syncBanner.ok      { border-left: 3px solid #16a34a; }
+        #syncBanner.err     { border-left: 3px solid #ef4444; background: #450a0a; }
+        #syncBanner.busy    { border-left: 3px solid #f59e0b; }
+        .sb-spin {
+            width: 12px; height: 12px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: white; border-radius: 50%;
+            animation: spin 0.65s linear infinite; flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         #toastMsg { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(80px); background:#1e293b; color:white; padding:10px 20px; border-radius:10px; font-size:0.83rem; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,0.3); transition:transform 0.28s ease; z-index:9998; white-space:nowrap; }
         #toastMsg.show { transform:translateX(-50%) translateY(0); }
         #toastMsg.ok  { border-left:4px solid #16a34a; }
@@ -383,7 +400,7 @@
 </head>
 <body>
 
-<div id="syncOverlay"><div class="sync-spinner"></div><span class="sync-label" id="syncLabel">Sincronizando...</span></div>
+<div id="syncBanner"><div class="sb-spin" id="sbSpin"></div><span id="sbText"></span></div>
 <div id="toastMsg"></div>
 <nav>
     <h2>GYM TRACKER by AMS</h2>
@@ -581,12 +598,27 @@
         clearTimeout(_tt); _tt = setTimeout(() => el.className = '', 2800);
     }
 
-    // ── Loading overlay ──────────────────────────────────────
-    function showLoad(msg) {
-        document.getElementById('syncLabel').textContent = msg || 'Sincronizando...';
-        document.getElementById('syncOverlay').classList.add('active');
+    // ── Sync banner (no invasivo) ────────────────────────────
+    let _bannerTimer;
+    function showBanner(msg, type) {
+        const el = document.getElementById('syncBanner');
+        const spin = document.getElementById('sbSpin');
+        const txt  = document.getElementById('sbText');
+        clearTimeout(_bannerTimer);
+        txt.textContent = msg;
+        el.className = 'visible ' + (type || 'busy');
+        spin.style.display = (type === 'busy' || !type) ? 'block' : 'none';
+        if (type === 'ok') {
+            _bannerTimer = setTimeout(() => { el.classList.remove('visible'); }, 2000);
+        }
     }
-    function hideLoad() { document.getElementById('syncOverlay').classList.remove('active'); }
+    function hideBanner() {
+        const el = document.getElementById('syncBanner');
+        el.classList.remove('visible');
+    }
+    // Compatibilidad con código antiguo que llama showLoad/hideLoad
+    function showLoad(msg) { showBanner(msg || 'Sincronizando...', 'busy'); }
+    function hideLoad()    { /* no-op: el banner se cierra solo en ok/err */ }
 
     // ── API calls ────────────────────────────────────────────
     function fetchWithTimeout(url, options, ms) {
@@ -645,26 +677,47 @@
         return s;
     }
 
-    // ── Load all data from Google Sheets ─────────────────────
+    // ── Cache keys ───────────────────────────────────────────
+    const CACHE_WORKOUTS = 'gym_cache_workouts';
+    const CACHE_MEDIDAS  = 'gym_cache_medidas';
+
+    // ── Load all: caché primero, Google en segundo plano ─────
     async function loadAll() {
         if (!SCRIPT_URL) {
-            setSyncStatus('err', 'Sin configurar — pulsa ⚙️');
-            document.getElementById('configBanner').classList.add('visible');
+            setSyncStatus('err', 'Sin configurar — ve a Config');
+            document.getElementById('configBanner') && document.getElementById('configBanner').classList.add('visible');
             return;
         }
-        showLoad('Cargando datos...');
+
+        // 1. Cargar caché local al instante (0ms de espera)
+        const cachedW = localStorage.getItem(CACHE_WORKOUTS);
+        const cachedM = localStorage.getItem(CACHE_MEDIDAS);
+        if (cachedW) {
+            try {
+                workouts = JSON.parse(cachedW);
+                medidas  = cachedM ? JSON.parse(cachedM) : [];
+                updateExerciseSelectors();
+                setSyncStatus('ok', 'Caché local · actualizando...');
+            } catch(e) {}
+        }
+
+        // 2. Sincronizar con Google en segundo plano
+        showBanner('Sincronizando...', 'busy');
         setSyncStatus('spin', 'Conectando...');
         try {
             const [wR, mR] = await Promise.all([apiGet('getWorkouts'), apiGet('getMedidas')]);
             workouts = (wR.data || []).map(s => ({ ...s, date: normalizeDate(s.date) }));
             medidas  = (mR.data || []).map(m => ({ ...m, date: normalizeDate(m.date) }));
+            // Actualizar caché local
+            localStorage.setItem(CACHE_WORKOUTS, JSON.stringify(workouts));
+            localStorage.setItem(CACHE_MEDIDAS,  JSON.stringify(medidas));
             updateExerciseSelectors();
             setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}));
-            toast('Datos cargados ✓', 'ok');
+            showBanner('Sincronizado ✓', 'ok');
         } catch(e) {
-            setSyncStatus('err', 'Error: ' + e.message);
-            toast('Error de conexión: ' + e.message, 'err');
-        } finally { hideLoad(); }
+            setSyncStatus('err', 'Sin conexión · usando caché');
+            showBanner('Sin conexión — usando datos locales', 'err');
+        }
     }
 
     // ── Navigation ───────────────────────────────────────────
@@ -682,7 +735,7 @@
         setTimeout(() => { document.getElementById('progressSelect').value = name; renderChart(); }, 100);
     }
 
-    // ── Add exercise ─────────────────────────────────────────
+    // ── Add exercise (optimistic: UI inmediata, sync en bg) ──
     async function addExerciseToSession() {
         const date = document.getElementById('workoutDate').value;
         const ex = {
@@ -693,24 +746,30 @@
             reps:   document.getElementById('exReps').value
         };
         if (!ex.name || !ex.weight) return toast('Completa nombre y peso', 'err');
-        if (!SCRIPT_URL) return toast('Configura Google Sheets primero ⚙️', 'err');
+        if (!SCRIPT_URL) return toast('Configura Google Sheets en Config ⚙️', 'err');
 
+        // 1. Actualizar UI al instante
         let session = workouts.find(s => s.date === date);
         if (session) session.exercises.push(ex);
         else workouts.push({ id: Date.now(), date, exercises: [ex] });
 
-        showLoad('Guardando...');
+        // Limpiar campos y actualizar UI sin esperar a Google
+        ['exName','exWeight','exSets','exReps'].forEach(id => document.getElementById(id).value = '');
+        updateExerciseSelectors();
+        renderExHistoryPanel('');
+        // Guardar en caché local inmediatamente
+        localStorage.setItem(CACHE_WORKOUTS, JSON.stringify(workouts));
+        showBanner('Guardando...', 'busy');
+
+        // 2. Sincronizar con Google en segundo plano
         try {
             await apiPost({ action: 'saveWorkouts', data: workouts });
-            ['exName','exWeight','exSets','exReps'].forEach(id => document.getElementById(id).value = '');
-            updateExerciseSelectors();
-            renderExHistoryPanel('');
             setSyncStatus('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}));
-            toast('Ejercicio guardado ✓', 'ok');
+            showBanner('Guardado ✓', 'ok');
         } catch(e) {
-            toast('Error: ' + e.message, 'err');
-            setSyncStatus('err', 'Error al guardar');
-        } finally { hideLoad(); }
+            setSyncStatus('err', 'Error al guardar en Google');
+            showBanner('Error al guardar en Google', 'err');
+        }
     }
 
     // ── Delete session ───────────────────────────────────────
@@ -726,18 +785,18 @@
         } finally { hideLoad(); }
     }
 
-    // ── Delete exercise ──────────────────────────────────────
+    // ── Delete exercise (optimistic) ────────────────────────
     async function deleteExercise(sid, eid) {
         const s = workouts.find(x => x.id === sid);
         s.exercises = s.exercises.filter(e => e.id !== eid);
         if (s.exercises.length === 0) workouts = workouts.filter(x => x.id !== sid);
-        showLoad('Eliminando...');
+        localStorage.setItem(CACHE_WORKOUTS, JSON.stringify(workouts));
+        renderHistory();
+        showBanner('Eliminando...', 'busy');
         try {
             await apiPost({ action: 'deleteExercise', sessionId: sid, exId: eid });
-            renderHistory();
-            toast('Ejercicio eliminado', 'ok');
-        } catch(e) { toast('Error: ' + e.message, 'err');
-        } finally { hideLoad(); }
+            showBanner('Eliminado ✓', 'ok');
+        } catch(e) { showBanner('Error al eliminar', 'err'); }
     }
 
     // ── Edit exercise ────────────────────────────────────────
@@ -767,13 +826,14 @@
         ex.weight = document.getElementById('edit-w-' + exId).value;
         ex.sets   = document.getElementById('edit-s-' + exId).value;
         ex.reps   = document.getElementById('edit-r-' + exId).value;
-        showLoad('Guardando cambios...');
+        // UI inmediata
+        localStorage.setItem(CACHE_WORKOUTS, JSON.stringify(workouts));
+        if (section === 'hist') renderHistory(); else renderChart();
+        showBanner('Guardando cambios...', 'busy');
         try {
             await apiPost({ action: 'updateExercise', sessionId, exId, weight: ex.weight, sets: ex.sets, reps: ex.reps });
-            if (section === 'hist') renderHistory(); else renderChart();
-            toast('Cambios guardados ✓', 'ok');
-        } catch(e) { toast('Error: ' + e.message, 'err');
-        } finally { hideLoad(); }
+            showBanner('Cambios guardados ✓', 'ok');
+        } catch(e) { showBanner('Error al guardar', 'err'); }
     }
 
     // ── Render history ───────────────────────────────────────
@@ -875,11 +935,13 @@
                     apiPost({ action: 'saveWorkouts', data: workouts }),
                     apiPost({ action: 'saveMedidas',  data: medidas  })
                 ]);
+                localStorage.setItem(CACHE_WORKOUTS, JSON.stringify(workouts));
+                localStorage.setItem(CACHE_MEDIDAS,  JSON.stringify(medidas));
                 updateExerciseSelectors();
                 setSyncStatus('ok', 'Importado ✓');
-                toast('Importación completada ✓', 'ok');
-            } catch(err) { toast('Error: ' + err.message, 'err');
-            } finally { hideLoad(); }
+                showBanner('Importación completada ✓', 'ok');
+            } catch(err) { showBanner('Error en importación', 'err');
+            }
         };
         reader.readAsText(e.target.files[0]);
     });
@@ -992,14 +1054,15 @@
         const idx = medidas.findIndex(m => m.date === date);
         if (idx >= 0) campos.forEach(c => { if (entry[c] !== undefined) medidas[idx][c] = entry[c]; });
         else medidas.push(entry);
-        showLoad('Guardando medidas...');
+        // UI inmediata
+        campos.forEach(c => document.getElementById('med-'+c).value = '');
+        renderMedidasChart(activeMedida);
+        localStorage.setItem(CACHE_MEDIDAS, JSON.stringify(medidas));
+        showBanner('Guardando medidas...', 'busy');
         try {
             await apiPost({ action: 'saveMedidas', data: medidas });
-            campos.forEach(c => document.getElementById('med-'+c).value = '');
-            renderMedidasChart(activeMedida);
-            toast('Medidas guardadas ✓', 'ok');
-        } catch(e) { toast('Error: ' + e.message, 'err');
-        } finally { hideLoad(); }
+            showBanner('Medidas guardadas ✓', 'ok');
+        } catch(e) { showBanner('Error al guardar medidas', 'err'); }
     }
 
     function selectMedida(key, btn) {
