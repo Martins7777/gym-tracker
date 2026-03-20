@@ -358,111 +358,16 @@
         .record-date { font-size: 0.72rem; color: #94a3b8; margin-left: 10px; white-space: nowrap; }
         .record-crown { margin-right: 8px; font-size: 1rem; }
         .section-divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
-
-        /* ===== SYNC BANNER (no invasivo) ===== */
-        #syncBanner {
-            position: fixed; bottom: 20px; right: 20px;
-            background: #1e293b; color: white;
-            padding: 8px 14px; border-radius: 10px;
-            font-size: 0.78rem; font-weight: 600;
-            display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-            z-index: 9999; pointer-events: none;
-            opacity: 0; transform: translateY(10px);
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-        #syncBanner.visible { opacity: 1; transform: translateY(0); }
-        #syncBanner.ok      { border-left: 3px solid #16a34a; }
-        #syncBanner.err     { border-left: 3px solid #ef4444; background: #450a0a; }
-        #syncBanner.busy    { border-left: 3px solid #f59e0b; }
-        .sb-spin {
-            width: 12px; height: 12px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: white; border-radius: 50%;
-            animation: spin 0.65s linear infinite; flex-shrink: 0;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #toastMsg { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(80px); background:#1e293b; color:white; padding:10px 20px; border-radius:10px; font-size:0.83rem; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,0.3); transition:transform 0.28s ease; z-index:9998; white-space:nowrap; }
-        #toastMsg.show { transform:translateX(-50%) translateY(0); }
-        #toastMsg.ok  { border-left:4px solid #16a34a; }
-        #toastMsg.err { border-left:4px solid #ef4444; }
-        #configBanner { background:#fef3c7; border:1px solid #fcd34d; border-radius:10px; padding:14px 16px; margin-bottom:16px; font-size:0.84rem; color:#92400e; display:none; }
-        #configBanner.visible { display:block; }
-        #configBanner strong { display:block; margin-bottom:6px; font-size:0.88rem; }
-        #scriptUrlInput { width:100%; padding:8px 10px; border:1px solid #fcd34d; border-radius:6px; font-size:0.83rem; margin:8px 0; box-sizing:border-box; background:white; }
-        #syncBar { display:flex; align-items:center; gap:8px; font-size:0.74rem; color:#64748b; padding:4px 0 12px 0; }
-        .sync-dot { width:8px; height:8px; border-radius:50%; background:#94a3b8; flex-shrink:0; }
-        .sync-dot.ok   { background:#16a34a; }
-        .sync-dot.err  { background:#ef4444; }
-        .sync-dot.spin { background:#f59e0b; animation:pulse 1s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.35} }
-
-        /* ===== USUARIOS ===== */
-        #userBadge {
-            position: fixed; top: 12px; right: 14px;
-            display: flex; align-items: center; gap: 7px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.18);
-            border-radius: 20px; padding: 5px 12px 5px 8px;
-            cursor: pointer; z-index: 1100;
-            transition: background 0.15s;
-        }
-        #userBadge:hover { background: rgba(255,255,255,0.18); }
-        .user-avatar {
-            width: 24px; height: 24px; border-radius: 50%;
-            background: var(--primary); color: white;
-            font-size: 0.72rem; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        #userBadgeName { color: white; font-size: 0.78rem; font-weight: 600; max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Dropdown de usuarios */
-        #userDropdown {
-            position: fixed; top: 50px; right: 14px;
-            background: white; border: 1px solid #e2e8f0;
-            border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            z-index: 1200; min-width: 180px; overflow: hidden;
-            display: none;
-        }
-        #userDropdown.open { display: block; }
-        .ud-header { padding: 10px 14px 6px; font-size: 0.68rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
-        .ud-user {
-            display: flex; align-items: center; gap: 10px;
-            padding: 9px 14px; cursor: pointer; transition: background 0.12s;
-            font-size: 0.85rem; font-weight: 500; color: #1e293b;
-        }
-        .ud-user:hover { background: #f8fafc; }
-        .ud-user.active { background: #eff6ff; color: var(--primary); font-weight: 700; }
-        .ud-user .user-avatar { width: 28px; height: 28px; font-size: 0.78rem; }
-        .ud-divider { border: none; border-top: 1px solid #f1f5f9; margin: 4px 0; }
-        .ud-action { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; font-size: 0.82rem; color: #64748b; transition: background 0.12s; }
-        .ud-action:hover { background: #f8fafc; }
-        .ud-action.danger { color: #ef4444; }
     </style>
 </head>
 <body>
 
-<div id="syncBanner"><div class="sb-spin" id="sbSpin"></div><span id="sbText"></span></div>
-
-<div id="userBadge" onclick="toggleUserDropdown()">
-    <div class="user-avatar" id="userAvatar">?</div>
-    <span id="userBadgeName">—</span>
-</div>
-
-<div id="userDropdown">
-    <div class="ud-header">Cambiar usuario</div>
-    <div id="udUserList"></div>
-    <hr class="ud-divider">
-    <div class="ud-action" onclick="openAddUser()">＋ Añadir usuario</div>
-</div>
-<div id="toastMsg"></div>
 <nav>
     <h2>GYM TRACKER by AMS</h2>
     <div class="nav-links">
         <button onclick="showSection('history')">Historial</button>
         <button onclick="showSection('progress')">Progreso</button>
-        <button onclick="showSection('io')">Config</button>
+        <button onclick="showSection('io')">Datos</button>
         <button onclick="showSection('medidas')">Medidas</button>
         <button onclick="showSection('stats')">Estadísticas</button>
 		<button onclick="showSection('log')">+Registro</button>
@@ -472,7 +377,6 @@
 <main>
     <section id="sec-log" class="card">
         <h3>Registrar Entrenamiento</h3>
-
         <div style="margin-bottom: 15px;">
             <div><label>Fecha</label><input type="date" id="workoutDate" style="max-width:220px"></div>
         </div>
@@ -515,42 +419,9 @@
     </section>
 
     <section id="sec-io" class="card hidden">
-        <h3>Configuración</h3>
-
-        <!-- Google Sheets -->
-        <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 10px 0;">🔗 Conexión Google Sheets</p>
-
-        <div id="syncBar" style="margin-bottom:14px;">
-            <div class="sync-dot" id="syncDot"></div>
-            <span id="syncStatus">Sin configurar</span>
-        </div>
-
-        <div id="configBanner" style="display:block;">
-            <strong>URL de tu Web App (Apps Script)</strong>
-            <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/XXXXXX/exec">
-            <button class="btn btn-primary" style="margin-top:8px;padding:10px" onclick="saveScriptUrl()">Guardar y Conectar</button>
-        </div>
-
-        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
-
-        <!-- Usuarios -->
-        <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px 0;">👤 Usuarios</p>
-        <div id="userListConfig" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
-        <div id="addUserForm" style="display:none;margin-bottom:14px;">
-            <input type="text" id="newUserName" placeholder="Nombre del usuario" style="margin-bottom:8px;">
-            <div style="display:flex;gap:8px;">
-                <button class="btn btn-primary" style="padding:9px" onclick="confirmAddUser()">Añadir</button>
-                <button class="btn" style="padding:9px;background:#f1f5f9;color:#64748b" onclick="cancelAddUser()">Cancelar</button>
-            </div>
-        </div>
-        <button class="btn btn-primary" style="padding:9px;max-width:180px;margin-bottom:0" onclick="openAddUser()">＋ Añadir usuario</button>
-
-        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
-
-        <!-- Backup -->
-        <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px 0;">💾 Backup de datos</p>
-        <button class="btn btn-primary" style="background:var(--accent);margin-bottom:12px" onclick="exportData()">Exportar Backup JSON</button>
-        <label style="display:block;margin-bottom:6px;">Importar Backup:</label>
+        <h3>Datos</h3>
+        <button class="btn btn-primary" style="background:var(--accent); margin-bottom:10px" onclick="exportData()">Exportar Backup</button>
+        <label>Importar Backup:</label>
         <input type="file" id="importFile" accept=".json">
     </section>
 
@@ -631,689 +502,498 @@
 </main>
 
 <script>
-    // ═══════════════════════════════════════════════════════
-    //  GYM TRACKER — Google Sheets edition
-    // ═══════════════════════════════════════════════════════
+    let workouts = JSON.parse(localStorage.getItem('gym_db')) || [];
 
-    // ── Config ──────────────────────────────────────────────
-    const GS_KEY = 'gym_gs_url';
-    let SCRIPT_URL = localStorage.getItem(GS_KEY) || '';
-
-    function saveScriptUrl() {
-        const v = document.getElementById('scriptUrlInput').value.trim();
-        if (!v.startsWith('https://script.google.com')) return toast('URL no válida', 'err');
-        SCRIPT_URL = v;
-        localStorage.setItem(GS_KEY, v);
-        // banner stays visible in Config section
-        toast('URL guardada ✓', 'ok');
-        loadAll();
-    }
-    function openConfig() {
-        showSection('io');
-        document.getElementById('scriptUrlInput').value = SCRIPT_URL;
-    }
-    function setSyncStatus(state, text) {
-        const dot = document.getElementById('syncDot');
-        const lbl = document.getElementById('syncStatus');
-        if (dot) dot.className = 'sync-dot ' + (state || '');
-        if (lbl) lbl.textContent = text;
-    }
-
-    // ── Toast ────────────────────────────────────────────────
-    let _tt;
-    function toast(msg, type) {
-        const el = document.getElementById('toastMsg');
-        el.textContent = msg; el.className = 'show ' + (type || 'ok');
-        clearTimeout(_tt); _tt = setTimeout(() => el.className = '', 2800);
-    }
-
-    // ── Sync banner (no invasivo) ────────────────────────────
-    let _bannerTimer;
-    function showBanner(msg, type) {
-        const el = document.getElementById('syncBanner');
-        const spin = document.getElementById('sbSpin');
-        const txt  = document.getElementById('sbText');
-        clearTimeout(_bannerTimer);
-        txt.textContent = msg;
-        el.className = 'visible ' + (type || 'busy');
-        spin.style.display = (type === 'busy' || !type) ? 'block' : 'none';
-        if (type === 'ok') {
-            _bannerTimer = setTimeout(() => { el.classList.remove('visible'); }, 2000);
-        }
-    }
-    function hideBanner() {
-        const el = document.getElementById('syncBanner');
-        el.classList.remove('visible');
-    }
-    // Compatibilidad con código antiguo que llama showLoad/hideLoad
-    function showLoad(msg) { showBanner(msg || 'Sincronizando...', 'busy'); }
-    function hideLoad()    { /* no-op: el banner se cierra solo en ok/err */ }
-
-    // ── API calls ────────────────────────────────────────────
-    function fetchWithTimeout(url, options, ms) {
-        ms = ms || 12000;
-        options = options || {};
-        const controller = new AbortController();
-        const timer = setTimeout(function() { controller.abort(); }, ms);
-        return fetch(url, Object.assign({}, options, { signal: controller.signal, redirect: 'follow' }))
-            .finally(function() { clearTimeout(timer); });
-    }
-
-    async function apiGet(action) {
-        if (!SCRIPT_URL) throw new Error('Sin URL configurada');
-        const r = await fetchWithTimeout(SCRIPT_URL + '?action=' + action);
-        const text = await r.text();
-        let d;
-        try { d = JSON.parse(text); } catch(e) { throw new Error('Respuesta no válida. Revisa la URL en ⚙️'); }
-        if (d.error) throw new Error(d.error);
-        return d;
-    }
-    async function apiPost(body) {
-        if (!SCRIPT_URL) throw new Error('Sin URL configurada');
-        const r = await fetchWithTimeout(SCRIPT_URL, { method: 'POST', body: JSON.stringify(body) });
-        const text = await r.text();
-        let d;
-        try { d = JSON.parse(text); } catch(e) { throw new Error('Respuesta no válida. Revisa la URL en ⚙️'); }
-        if (d.error) throw new Error(d.error);
-        return d;
-    }
-
-    // ── Users ────────────────────────────────────────────────
-    const USERS_KEY   = 'gym_users';
-    const ACTIVE_KEY  = 'gym_active_user';
-
-    // Default user always exists
-    function getUsers() {
-        const stored = localStorage.getItem(USERS_KEY);
-        if (stored) return JSON.parse(stored);
-        const def = [{ id: 'user_default', name: 'Yo' }];
-        localStorage.setItem(USERS_KEY, JSON.stringify(def));
-        return def;
-    }
-    function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
-
-    function getActiveUserId() {
-        return localStorage.getItem(ACTIVE_KEY) || getUsers()[0].id;
-    }
-    function setActiveUserId(id) { localStorage.setItem(ACTIVE_KEY, id); }
-    function getActiveUser() { return getUsers().find(u => u.id === getActiveUserId()) || getUsers()[0]; }
-
-    function userCacheKey(base, userId) { return base + '_' + (userId || getActiveUserId()); }
-    function userInitials(name) { return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
-
-    // Render badge in nav
-    function renderUserBadge() {
-        const u = getActiveUser();
-        document.getElementById('userAvatar').textContent   = userInitials(u.name);
-        document.getElementById('userBadgeName').textContent = u.name;
-    }
-
-    // Render dropdown list
-    function renderUserDropdown() {
-        const users    = getUsers();
-        const activeId = getActiveUserId();
-        document.getElementById('udUserList').innerHTML = users.map(u => `
-            <div class="ud-user ${u.id === activeId ? 'active' : ''}" onclick="switchUser('${u.id}')">
-                <div class="user-avatar">${userInitials(u.name)}</div>
-                ${u.name}
-            </div>`).join('');
-    }
-
-    // Render user list in Config
-    function renderUserListConfig() {
-        const users    = getUsers();
-        const activeId = getActiveUserId();
-        const el = document.getElementById('userListConfig');
-        if (!el) return;
-        el.innerHTML = users.map(u => `
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
-                <div class="user-avatar" style="width:30px;height:30px;font-size:0.8rem">${userInitials(u.name)}</div>
-                <span style="flex:1;font-size:0.88rem;font-weight:${u.id===activeId?'700':'500'};color:${u.id===activeId?'var(--primary)':'#1e293b'}">${u.name}${u.id===activeId?' <span style="font-size:0.72rem;color:#94a3b8">(activo)</span>':''}</span>
-                ${users.length > 1 && u.id !== activeId ? `<button onclick="deleteUser('${u.id}')" style="border:none;background:none;color:#ef4444;cursor:pointer;font-size:0.8rem;padding:2px 6px;">✕</button>` : ''}
-            </div>`).join('');
-    }
-
-    function toggleUserDropdown() {
-        renderUserDropdown();
-        document.getElementById('userDropdown').classList.toggle('open');
-    }
-    // Close dropdown on outside click
-    document.addEventListener('click', function(e) {
-        const dd = document.getElementById('userDropdown');
-        const badge = document.getElementById('userBadge');
-        if (dd && !dd.contains(e.target) && !badge.contains(e.target)) dd.classList.remove('open');
-    });
-
-    function switchUser(id) {
-        setActiveUserId(id);
-        workouts = [];
-        medidas  = [];
-        document.getElementById('userDropdown').classList.remove('open');
-        renderUserBadge();
-        renderUserListConfig();
-        updateExerciseSelectors();
-        loadAll();
-    }
-
-    function openAddUser() {
-        document.getElementById('addUserForm').style.display = 'block';
-        document.getElementById('newUserName').focus();
-        document.getElementById('userDropdown').classList.remove('open');
-        showSection('io');
-    }
-    function cancelAddUser() {
-        document.getElementById('addUserForm').style.display = 'none';
-        document.getElementById('newUserName').value = '';
-    }
-    function confirmAddUser() {
-        const name = document.getElementById('newUserName').value.trim();
-        if (!name) return toast('Introduce un nombre', 'err');
-        const users = getUsers();
-        const id = 'user_' + Date.now();
-        users.push({ id, name });
-        saveUsers(users);
-        cancelAddUser();
-        renderUserListConfig();
-        renderUserDropdown();
-        toast('Usuario "' + name + '" añadido ✓', 'ok');
-    }
-    function deleteUser(id) {
-        if (!confirm('¿Eliminar este usuario y todos sus datos del caché local?')) return;
-        let users = getUsers();
-        users = users.filter(u => u.id !== id);
-        saveUsers(users);
-        // Clean local cache for that user
-        localStorage.removeItem(userCacheKey(CACHE_WORKOUTS, id));
-        localStorage.removeItem(userCacheKey(CACHE_MEDIDAS,  id));
-        renderUserListConfig();
-        toast('Usuario eliminado', 'ok');
-    }
-
-    // ── State (per active user) ───────────────────────────────
-    let workouts = [];
-    let medidas  = [];
-
-    // ── Date init ────────────────────────────────────────────
+    // Inicializar fecha
     const hoy = new Date();
-    const _off = hoy.getTimezoneOffset();
-    const fechaLocal = new Date(hoy.getTime() - (_off * 60000)).toISOString().split('T')[0];
+    const offset = hoy.getTimezoneOffset();
+    const fechaLocal = new Date(hoy.getTime() - (offset*60*1000)).toISOString().split('T')[0];
     document.getElementById('workoutDate').value = fechaLocal;
 
-    // ── Normalize date from Google Sheets (may return Date object or ISO string) ──
-    function normalizeDate(raw) {
-        if (!raw) return '';
-        const s = String(raw).trim();
-        // Already in YYYY-MM-DD format
-        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-        // Try parsing as date and extract YYYY-MM-DD
-        try {
-            const d = new Date(s);
-            if (!isNaN(d.getTime())) {
-                const offset = d.getTimezoneOffset();
-                const local = new Date(d.getTime() - offset * 60000);
-                return local.toISOString().split('T')[0];
-            }
-        } catch(e) {}
-        return s;
-    }
-
-    // ── Cache keys (user-scoped helpers) ─────────────────────
-    const CACHE_WORKOUTS = 'gym_cache_workouts';
-    const CACHE_MEDIDAS  = 'gym_cache_medidas';
-    function cwKey() { return userCacheKey(CACHE_WORKOUTS); }
-    function cmKey() { return userCacheKey(CACHE_MEDIDAS);  }
-
-    // ── Load all: caché primero, Google en segundo plano ─────
-    async function loadAll() {
-        if (!SCRIPT_URL) {
-            setSyncStatus('err', 'Sin configurar — ve a Config');
-            document.getElementById('configBanner') && document.getElementById('configBanner').classList.add('visible');
-            return;
-        }
-
-        const uid = getActiveUserId();
-
-        // 1. Cargar caché local al instante (0ms de espera)
-        const cachedW = localStorage.getItem(cwKey());
-        const cachedM = localStorage.getItem(cmKey());
-        if (cachedW) {
-            try {
-                workouts = JSON.parse(cachedW);
-                medidas  = cachedM ? JSON.parse(cachedM) : [];
-                updateExerciseSelectors();
-                setSyncStatus('ok', 'Caché local · actualizando...');
-            } catch(e) {}
-        }
-
-        // 2. Sincronizar con Google en segundo plano
-        showBanner('Sincronizando...', 'busy');
-        setSyncStatus('spin', 'Conectando...');
-        try {
-            const [wR, mR] = await Promise.all([
-                apiGet('getWorkouts&user=' + uid),
-                apiGet('getMedidas&user='  + uid)
-            ]);
-            workouts = (wR.data || []).map(s => ({ ...s, date: normalizeDate(s.date) }));
-            medidas  = (mR.data || []).map(m => ({ ...m, date: normalizeDate(m.date) }));
-            localStorage.setItem(cwKey(), JSON.stringify(workouts));
-            localStorage.setItem(cmKey(), JSON.stringify(medidas));
-            updateExerciseSelectors();
-            setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}));
-            showBanner('Sincronizado ✓', 'ok');
-        } catch(e) {
-            setSyncStatus('err', 'Sin conexión · usando caché');
-            showBanner('Sin conexión — usando datos locales', 'err');
-        }
-    }
-
-    // ── Navigation ───────────────────────────────────────────
     function showSection(id) {
         document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
         document.getElementById('sec-' + id).classList.remove('hidden');
-        if (id === 'history')  renderHistory();
-        if (id === 'progress') updateExerciseSelectors();
-        if (id === 'medidas')  renderMedidasChart(activeMedida);
-        if (id === 'stats')    renderStats();
-        window.scrollTo(0, 0);
+        if(id === 'history') renderHistory();
+        if(id === 'progress') updateExerciseSelectors();
+        if(id === 'medidas') { renderMedidasChart(activeMedida); }
+        if(id === 'stats') renderStats();
+        window.scrollTo(0,0);
     }
+
     function goToProgress(name) {
         showSection('progress');
-        setTimeout(() => { document.getElementById('progressSelect').value = name; renderChart(); }, 100);
+        setTimeout(() => {
+            document.getElementById('progressSelect').value = name;
+            renderChart();
+        }, 100);
     }
 
-    // ── Add exercise (optimistic: UI inmediata, sync en bg) ──
-    async function addExerciseToSession() {
+    function addExerciseToSession() {
         const date = document.getElementById('workoutDate').value;
-        const ex = {
-            id:     Date.now(),
-            name:   document.getElementById('exName').value,
-            weight: document.getElementById('exWeight').value,
-            sets:   document.getElementById('exSets').value,
-            reps:   document.getElementById('exReps').value
-        };
-        if (!ex.name || !ex.weight) return toast('Completa nombre y peso', 'err');
-        if (!SCRIPT_URL) return toast('Configura Google Sheets en Config ⚙️', 'err');
+        const ex = { id: Date.now(), name: document.getElementById('exName').value, weight: document.getElementById('exWeight').value, sets: document.getElementById('exSets').value, reps: document.getElementById('exReps').value };
 
-        // 1. Actualizar UI al instante
+        if(!ex.name || !ex.weight) return alert("Completa los campos");
+
         let session = workouts.find(s => s.date === date);
-        if (session) session.exercises.push(ex);
-        else workouts.push({ id: Date.now(), date, exercises: [ex] });
+        if(session) session.exercises.push(ex);
+        else workouts.push({ id: Date.now(), date: date, exercises: [ex] });
 
-        // Limpiar campos y actualizar UI sin esperar a Google
-        ['exName','exWeight','exSets','exReps'].forEach(id => document.getElementById(id).value = '');
+        saveToStorage();
+        ['exName', 'exWeight', 'exSets', 'exReps'].forEach(id => document.getElementById(id).value = "");
+        alert("¡Guardado!");
         updateExerciseSelectors();
-        renderExHistoryPanel('');
-        // Guardar en caché local inmediatamente
-        localStorage.setItem(cwKey(), JSON.stringify(workouts));
-        showBanner('Guardando...', 'busy');
-
-        // 2. Sincronizar con Google en segundo plano
-        try {
-            await apiPost({ action: 'saveWorkouts', data: workouts, user: getActiveUserId() });
-            setSyncStatus('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}));
-            showBanner('Guardado ✓', 'ok');
-        } catch(e) {
-            setSyncStatus('err', 'Error al guardar en Google');
-            showBanner('Error al guardar en Google', 'err');
-        }
     }
 
-    // ── Delete session ───────────────────────────────────────
-    async function deleteSession(id) {
-        if (!confirm('¿Eliminar este día completo?')) return;
-        workouts = workouts.filter(s => s.id !== id);
-        showLoad('Eliminando...');
-        try {
-            await apiPost({ action: 'deleteSession', sessionId: id, user: getActiveUserId() });
-            renderHistory();
-            toast('Sesión eliminada', 'ok');
-        } catch(e) { toast('Error: ' + e.message, 'err');
-        } finally { hideLoad(); }
-    }
+    function saveToStorage() { localStorage.setItem('gym_db', JSON.stringify(workouts)); }
 
-    // ── Delete exercise (optimistic) ────────────────────────
-    async function deleteExercise(sid, eid) {
-        const s = workouts.find(x => x.id === sid);
-        s.exercises = s.exercises.filter(e => e.id !== eid);
-        if (s.exercises.length === 0) workouts = workouts.filter(x => x.id !== sid);
-        localStorage.setItem(cwKey(), JSON.stringify(workouts));
-        renderHistory();
-        showBanner('Eliminando...', 'busy');
-        try {
-            await apiPost({ action: 'deleteExercise', sessionId: sid, exId: eid, user: getActiveUserId() });
-            showBanner('Eliminado ✓', 'ok');
-        } catch(e) { showBanner('Error al eliminar', 'err'); }
-    }
-
-    // ── Edit exercise ────────────────────────────────────────
     function enableEdit(sessionId, exId, section) {
-        const row = document.getElementById('row-' + section + '-' + exId);
+        const row = document.getElementById(`row-${section}-${exId}`);
         const session = workouts.find(s => s.id === sessionId);
         const ex = session.exercises.find(e => e.id === exId);
+
         if (section === 'hist') {
-            row.querySelector('.ex-pills').innerHTML =
-                '<input type="number" class="edit-input" id="edit-w-' + exId + '" value="' + ex.weight + '" placeholder="kg">' +
-                '<input type="number" class="edit-input" id="edit-s-' + exId + '" value="' + ex.sets + '" placeholder="sets">' +
-                '<input type="number" class="edit-input" id="edit-r-' + exId + '" value="' + ex.reps + '" placeholder="reps">';
+            row.querySelector('.ex-pills').innerHTML = `
+                <input type="number" class="edit-input" id="edit-w-${exId}" value="${ex.weight}" placeholder="kg">
+                <input type="number" class="edit-input" id="edit-s-${exId}" value="${ex.sets}" placeholder="sets">
+                <input type="number" class="edit-input" id="edit-r-${exId}" value="${ex.reps}" placeholder="reps">`;
             row.querySelector('.ex-row-btns').innerHTML =
-                '<button class="btn-save" onclick="saveEdit(' + sessionId + ',' + exId + ',\'hist\')">OK</button>';
+                `<button class="btn-save" onclick="saveEdit(${sessionId}, ${exId}, 'hist')">OK</button>`;
         } else {
             const cells = row.cells;
-            cells[1].innerHTML = '<input type="number" class="edit-input" id="edit-w-' + exId + '" value="' + ex.weight + '">';
-            cells[2].innerHTML = '<input type="number" class="edit-input" id="edit-s-' + exId + '" value="' + ex.sets + '">';
-            cells[3].innerHTML = '<input type="number" class="edit-input" id="edit-r-' + exId + '" value="' + ex.reps + '">';
-            cells[4].innerHTML = '<button class="btn-save" onclick="saveEdit(' + sessionId + ',' + exId + ',\'' + section + '\')">OK</button>';
+            cells[1].innerHTML = `<input type="number" class="edit-input" id="edit-w-${exId}" value="${ex.weight}">`;
+            cells[2].innerHTML = `<input type="number" class="edit-input" id="edit-s-${exId}" value="${ex.sets}">`;
+            cells[3].innerHTML = `<input type="number" class="edit-input" id="edit-r-${exId}" value="${ex.reps}">`;
+            cells[4].innerHTML = `<button class="btn-save" onclick="saveEdit(${sessionId}, ${exId}, '${section}')">OK</button>`;
         }
     }
 
-    async function saveEdit(sessionId, exId, section) {
+    function saveEdit(sessionId, exId, section) {
         const session = workouts.find(s => s.id === sessionId);
         const ex = session.exercises.find(e => e.id === exId);
-        ex.weight = document.getElementById('edit-w-' + exId).value;
-        ex.sets   = document.getElementById('edit-s-' + exId).value;
-        ex.reps   = document.getElementById('edit-r-' + exId).value;
-        // UI inmediata
-        localStorage.setItem(cwKey(), JSON.stringify(workouts));
-        if (section === 'hist') renderHistory(); else renderChart();
-        showBanner('Guardando cambios...', 'busy');
-        try {
-            await apiPost({ action: 'updateExercise', sessionId, exId, weight: ex.weight, sets: ex.sets, reps: ex.reps, user: getActiveUserId() });
-            showBanner('Cambios guardados ✓', 'ok');
-        } catch(e) { showBanner('Error al guardar', 'err'); }
+        ex.weight = document.getElementById(`edit-w-${exId}`).value;
+        ex.sets = document.getElementById(`edit-s-${exId}`).value;
+        ex.reps = document.getElementById(`edit-r-${exId}`).value;
+        saveToStorage();
+        if(section === 'hist') renderHistory(); else renderChart();
     }
 
-    // ── Render history ───────────────────────────────────────
     function renderHistory() {
         const container = document.getElementById('historyList');
-        container.innerHTML = '';
+        container.innerHTML = "";
         const sorted = [...workouts].sort((a,b) => new Date(b.date) - new Date(a.date));
+
         sorted.forEach(session => {
             const fEuro = session.date.split('-').reverse().join('/');
+            const n = session.exercises.length;
             const div = document.createElement('div');
             div.className = 'session-card';
-            div.innerHTML =
-                '<div class="session-header">' +
-                    '<div class="session-header-info"><span class="session-header-date">' + fEuro + '</span></div>' +
-                    '<button class="btn-delete-session" onclick="deleteSession(' + session.id + ')">🗑 Eliminar</button>' +
-                '</div>' +
-                '<div class="ex-rows">' +
-                session.exercises.map(ex =>
-                    '<div class="ex-row" id="row-hist-' + ex.id + '">' +
-                        '<div class="ex-row-name"><span class="exercise-link" onclick="goToProgress(\'' + ex.name + '\')">' + ex.name + '</span></div>' +
-                        '<div class="ex-pills"><span class="ex-pill">' + ex.weight + ' <em>kg</em></span><span class="ex-pill">' + ex.sets + '<em>×</em>' + ex.reps + '</span></div>' +
-                        '<div class="ex-row-btns"><button class="btn-edit" onclick="enableEdit(' + session.id + ',' + ex.id + ',\'hist\')">Editar</button><button class="btn-del-ex" onclick="deleteExercise(' + session.id + ',' + ex.id + ')">✕</button></div>' +
-                    '</div>'
-                ).join('') +
-                '</div>';
+            div.innerHTML = `
+                <div class="session-header">
+                    <div class="session-header-info">
+                        <span class="session-header-date">${fEuro}</span>
+                    </div>
+                    <button class="btn-delete-session" onclick="deleteSession(${session.id})">🗑 Eliminar</button>
+                </div>
+                <div class="ex-rows">
+                    ${session.exercises.map(ex => `
+                        <div class="ex-row" id="row-hist-${ex.id}">
+                            <div class="ex-row-name">
+                                <span class="exercise-link" onclick="goToProgress('${ex.name}')">${ex.name}</span>
+                            </div>
+                            <div class="ex-pills">
+                                <span class="ex-pill">${ex.weight} <em>kg</em></span>
+                                <span class="ex-pill">${ex.sets}<em>×</em>${ex.reps}</span>
+                            </div>
+                            <div class="ex-row-btns">
+                                <button class="btn-edit" onclick="enableEdit(${session.id}, ${ex.id}, 'hist')">Editar</button>
+                                <button class="btn-del-ex" onclick="deleteExercise(${session.id}, ${ex.id})">✕</button>
+                            </div>
+                        </div>`).join('')}
+                </div>`;
             container.appendChild(div);
         });
     }
 
-    // ── Exercise selectors ───────────────────────────────────
     function updateExerciseSelectors() {
         const names = [...new Set(workouts.flatMap(s => s.exercises.map(e => e.name)))].sort();
-        document.getElementById('exHistoryList').innerHTML = names.map(n => '<option value="' + n + '">').join('');
-        const sel = document.getElementById('progressSelect');
-        const cur = sel.value;
-        sel.innerHTML = '<option value="">Selecciona ejercicio...</option>' + names.map(n => '<option value="' + n + '">' + n + '</option>').join('');
-        if (cur) sel.value = cur;
+        document.getElementById('exHistoryList').innerHTML = names.map(n => `<option value="${n}">`).join('');
+        const select = document.getElementById('progressSelect');
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Selecciona ejercicio...</option>' + names.map(n => `<option value="${n}">${n}</option>`).join('');
+        if(currentVal) select.value = currentVal;
     }
 
-    // ── Progress chart ───────────────────────────────────────
     let chart;
     function renderChart() {
         const name = document.getElementById('progressSelect').value;
-        const hc   = document.getElementById('exerciseSpecificHistory');
-        if (!name) { hc.innerHTML = ''; return; }
-        const pts = [];
+        const historyContainer = document.getElementById('exerciseSpecificHistory');
+        if(!name) { historyContainer.innerHTML = ""; return; }
+
+        const dataPoints = [];
         workouts.forEach(s => s.exercises.forEach(ex => {
-            if (ex.name === name) pts.push({ sessionId: s.id, exId: ex.id, date: s.date, weight: parseFloat(ex.weight), reps: parseInt(ex.reps), sets: ex.sets });
+            if(ex.name === name) dataPoints.push({ sessionId: s.id, exId: ex.id, date: s.date, weight: parseFloat(ex.weight), reps: parseInt(ex.reps), sets: ex.sets });
         }));
-        pts.sort((a,b) => new Date(a.date) - new Date(b.date));
-        if (chart) chart.destroy();
+        dataPoints.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        if(chart) chart.destroy();
         chart = new Chart(document.getElementById('progressChart'), {
             data: {
-                labels: pts.map(p => p.date.split('-').reverse().join('/')),
+                labels: dataPoints.map(p => p.date.split('-').reverse().join('/')),
                 datasets: [
-                    { type:'line', label:'Carga (kg)', data:pts.map(p=>p.weight), borderColor:'#2563eb', yAxisID:'yWeight', tension:0.3, fill:true, backgroundColor:'rgba(37,99,235,0.1)' },
-                    { type:'bar',  label:'Reps',       data:pts.map(p=>p.reps),   backgroundColor:'rgba(245,158,11,0.3)', yAxisID:'yReps', barThickness:10 }
+                    { type: 'line', label: 'Carga (kg)', data: dataPoints.map(p => p.weight), borderColor: '#2563eb', yAxisID: 'yWeight', tension: 0.3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' },
+                    { type: 'bar', label: 'Reps', data: dataPoints.map(p => p.reps), backgroundColor: 'rgba(245, 158, 11, 0.3)', yAxisID: 'yReps', barThickness: 10 }
                 ]
             },
-            options: { responsive:true, maintainAspectRatio:false,
+            options: {
+                responsive: true, maintainAspectRatio: false,
                 scales: {
-                    yWeight: { type:'linear', position:'left',  title:{display:true,text:'kg'} },
-                    yReps:   { type:'linear', position:'right', beginAtZero:true, grid:{drawOnChartArea:false}, title:{display:true,text:'reps'} }
+                    yWeight: { type: 'linear', position: 'left', title: { display: true, text: 'kg' } },
+                    yReps: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'reps' } }
                 }
             }
         });
-        const ls = [...pts].sort((a,b) => new Date(b.date) - new Date(a.date));
-        hc.innerHTML = '<h4 style="margin:20px 0 10px 0">Historial: ' + name + '</h4>' +
-            '<table class="history-table"><thead><tr><th>Fecha</th><th>Peso</th><th>Sets</th><th>Reps</th><th>Acción</th></tr></thead><tbody>' +
-            ls.map(l =>
-                '<tr id="row-prog-' + l.exId + '">' +
-                '<td>' + l.date.split('-').reverse().join('/') + '</td>' +
-                '<td style="white-space:nowrap">' + l.weight + ' kg</td>' +
-                '<td>' + l.sets + '</td><td>' + l.reps + '</td>' +
-                '<td><button class="btn-edit" onclick="enableEdit(' + l.sessionId + ',' + l.exId + ',\'prog\')">Editar</button></td></tr>'
-            ).join('') + '</tbody></table>';
+
+        const logsSorted = [...dataPoints].sort((a,b) => new Date(b.date) - new Date(a.date));
+        historyContainer.innerHTML = `
+            <h4 style="margin:20px 0 10px 0">Historial: ${name}</h4>
+            <table class="history-table">
+                <thead><tr><th>Fecha</th><th>Peso</th><th>Sets</th><th>Reps</th><th>Acción</th></tr></thead>
+                <tbody>
+                    ${logsSorted.map(l => `
+                        <tr id="row-prog-${l.exId}">
+                            <td data-label="Fecha">${l.date.split('-').reverse().join('/')}</td>
+                            <td data-label="Peso">${l.weight} kg</td>
+                            <td data-label="Sets">${l.sets}</td>
+                            <td data-label="Reps">${l.reps}</td>
+                            <td data-label="Acción"><button class="btn-edit" onclick="enableEdit(${l.sessionId}, ${l.exId}, 'prog')">Editar</button></td>
+                        </tr>`).join('')}
+                </tbody>
+            </table>`;
     }
 
-    // ── Export / Import ──────────────────────────────────────
+    function deleteSession(id) { if(confirm("¿Eliminar día completo?")) { workouts = workouts.filter(s => s.id !== id); saveToStorage(); renderHistory(); } }
+    function deleteExercise(sid, eid) { 
+        const s = workouts.find(x => x.id === sid); 
+        s.exercises = s.exercises.filter(e => e.id !== eid); 
+        if(s.exercises.length === 0) workouts = workouts.filter(x => x.id !== sid); 
+        saveToStorage(); renderHistory(); 
+    }
+
     function exportData() {
-        const users = getUsers();
-        const allData = { version: 2, users, data: {} };
-        users.forEach(u => {
-            const w = localStorage.getItem(userCacheKey(CACHE_WORKOUTS, u.id));
-            const m = localStorage.getItem(userCacheKey(CACHE_MEDIDAS,  u.id));
-            allData.data[u.id] = {
-                name:     u.name,
-                workouts: w ? JSON.parse(w) : [],
-                medidas:  m ? JSON.parse(m) : []
-            };
-        });
-        const str = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(allData, null, 2));
-        const a = document.createElement('a');
-        a.setAttribute('href', str);
-        a.setAttribute('download', 'backup_gym_all.json');
-        a.click();
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workouts));
+        const dl = document.createElement('a');
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", "backup_gym.json");
+        dl.click();
     }
 
-    document.getElementById('importFile').addEventListener('change', async function(e) {
+    document.getElementById('importFile').addEventListener('change', function(e) {
         const reader = new FileReader();
-        reader.onload = async function(ev) {
-            const parsed = JSON.parse(ev.target.result);
-            if (!SCRIPT_URL) return toast('Configura Google Sheets antes de importar', 'err');
-            showBanner('Importando...', 'busy');
-            if (parsed.version === 2 && parsed.data) {
-                const users = parsed.users || [];
-                saveUsers(users);
-                renderUserBadge(); renderUserListConfig();
-                for (const uid of Object.keys(parsed.data)) {
-                    const uData = parsed.data[uid];
-                    const w = (uData.workouts||[]).map(s=>({id:s.id,date:s.date,exercises:s.exercises||[]}));
-                    const m = uData.medidas || [];
-                    localStorage.setItem(userCacheKey(CACHE_WORKOUTS,uid), JSON.stringify(w));
-                    localStorage.setItem(userCacheKey(CACHE_MEDIDAS, uid), JSON.stringify(m));
-                    try { await apiPost({action:'saveWorkouts',data:w,user:uid}); await apiPost({action:'saveMedidas',data:m,user:uid}); } catch(e){}
-                }
-                workouts = JSON.parse(localStorage.getItem(cwKey())||'[]');
-                medidas  = JSON.parse(localStorage.getItem(cmKey())||'[]');
-            } else {
-                workouts = Array.isArray(parsed) ? parsed : (parsed.workouts||[]);
-                medidas  = Array.isArray(parsed) ? [] : (parsed.medidas||[]);
-                workouts = workouts.map(s=>({id:s.id,date:s.date,exercises:s.exercises||[]}));
-                localStorage.setItem(cwKey(), JSON.stringify(workouts));
-                localStorage.setItem(cmKey(), JSON.stringify(medidas));
-                try { await apiPost({action:'saveWorkouts',data:workouts,user:getActiveUserId()}); await apiPost({action:'saveMedidas',data:medidas,user:getActiveUserId()}); } catch(e){}
-            }
-            updateExerciseSelectors();
-            setSyncStatus('ok','Importado ✓');
-            showBanner('Importación completada ✓','ok');
-            reader.readAsText(e.target.files[0]);
+        reader.onload = function(event) {
+            const parsed = JSON.parse(event.target.result);
+            // Normalise: strip title field from every session
+            workouts = parsed.map(s => ({
+                id: s.id,
+                date: s.date,
+                exercises: s.exercises || []
+            }));
+            saveToStorage();
+            location.reload();
+        };
+        reader.readAsText(e.target.files[0]);
     });
 
-    // ── Ex history panel ─────────────────────────────────────
+    updateExerciseSelectors();
+
+    // Panel historial ejercicio en Registro
     function renderExHistoryPanel(name) {
         const panel = document.getElementById('exHistoryPanel');
-        const rows  = document.getElementById('exHistoryRows');
+        const rowsContainer = document.getElementById('exHistoryRows');
         const badge = document.getElementById('exNameBadge');
-        const t = name ? name.trim() : '';
-        if (!t) { panel.style.display = 'none'; return; }
+        const trimmed = name ? name.trim() : '';
+        if (!trimmed) { panel.style.display = 'none'; return; }
         const entries = [];
-        workouts.forEach(s => s.exercises.forEach(ex => {
-            if (ex.name.toLowerCase() === t.toLowerCase())
-                entries.push({ date: s.date, weight: ex.weight, sets: ex.sets, reps: ex.reps });
-        }));
-        entries.sort((a,b) => new Date(b.date) - new Date(a.date));
+        workouts.forEach(s => {
+            s.exercises.forEach(ex => {
+                if (ex.name.toLowerCase() === trimmed.toLowerCase()) {
+                    entries.push({ date: s.date, weight: ex.weight, sets: ex.sets, reps: ex.reps });
+                }
+            });
+        });
+        entries.sort((a, b) => new Date(b.date) - new Date(a.date));
         const recent = entries.slice(0, 5);
-        badge.textContent = t;
+        badge.textContent = trimmed;
         panel.style.display = 'block';
-        if (!recent.length) { rows.innerHTML = '<div class="ex-hist-empty">Sin registros previos para este ejercicio</div>'; return; }
-        rows.innerHTML = recent.map((e, i) => {
-            const fd = e.date.split('-').reverse().join('/');
-            const latest = i === 0 ? '&nbsp;<span style="color:var(--primary);font-size:0.7rem;font-weight:700">&#9650; ultimo</span>' : '';
-            return '<div class="ex-hist-row"><span class="ex-hist-date">' + fd + latest + '</span><span class="ex-hist-val">' + e.weight + '&thinsp;<span>kg</span></span><span class="ex-hist-val">' + (e.sets||'--') + '&thinsp;<span>x</span></span><span class="ex-hist-val">' + (e.reps||'--') + '&thinsp;<span>reps</span></span></div>';
+        if (recent.length === 0) {
+            rowsContainer.innerHTML = '<div class="ex-hist-empty">Sin registros previos para este ejercicio</div>';
+            return;
+        }
+        rowsContainer.innerHTML = recent.map((e, i) => {
+            const fDate = e.date.split('-').reverse().join('/');
+            const isLatest = i === 0 ? '&nbsp;<span style="color:var(--primary);font-size:0.7rem;font-weight:700">&#9650; ultimo</span>' : '';
+            return `<div class="ex-hist-row">
+                <span class="ex-hist-date">${fDate}${isLatest}</span>
+                <span class="ex-hist-val">${e.weight}&thinsp;<span>kg</span></span>
+                <span class="ex-hist-val">${e.sets || '--'}&thinsp;<span>x</span></span>
+                <span class="ex-hist-val">${e.reps || '--'}&thinsp;<span>reps</span></span>
+            </div>`;
         }).join('');
     }
-    document.getElementById('exName').addEventListener('input', function() { renderExHistoryPanel(this.value); });
 
-    // ── Stats ────────────────────────────────────────────────
+    document.getElementById('exName').addEventListener('input', function() {
+        renderExHistoryPanel(this.value);
+    });
+    // ===== ESTADÍSTICAS =====
     let volChart = null;
+
     function renderStats() {
-        if (!workouts.length) {
-            document.getElementById('statsGrid').innerHTML = '<p style="color:#94a3b8;font-size:0.9rem;">Sin datos aún.</p>';
+        if(!workouts.length) {
+            document.getElementById('statsGrid').innerHTML = '<p style="color:#94a3b8;font-size:0.9rem;">Sin datos aún. ¡Empieza a registrar entrenos!</p>';
             document.getElementById('recordsList').innerHTML = '';
             document.getElementById('topExList').innerHTML = '';
             return;
         }
+
+        // Tarjetas resumen
         const totalSessions  = workouts.length;
-        const totalExercises = workouts.reduce((s,w) => s + w.exercises.length, 0);
-        const totalVol = workouts.reduce((s,w) => s + w.exercises.reduce((ss,ex) =>
-            ss + (parseFloat(ex.weight)||0)*(parseInt(ex.sets)||1)*(parseInt(ex.reps)||1), 0), 0);
+        const totalExercises = workouts.reduce((s, w) => s + w.exercises.length, 0);
+        const totalVol       = workouts.reduce((s, w) => s + w.exercises.reduce((ss, ex) =>
+            ss + (parseFloat(ex.weight)||0) * (parseInt(ex.sets)||1) * (parseInt(ex.reps)||1), 0), 0);
         const exNames = [...new Set(workouts.flatMap(w => w.exercises.map(e => e.name)))];
-        document.getElementById('statsGrid').innerHTML =
-            '<div class="stat-card"><div class="sc-icon">🗓️</div><div class="sc-val">' + totalSessions + '</div><div class="sc-lbl">Sesiones</div></div>' +
-            '<div class="stat-card"><div class="sc-icon">💪</div><div class="sc-val">' + totalExercises + '</div><div class="sc-lbl">Series totales</div></div>' +
-            '<div class="stat-card"><div class="sc-icon">⚖️</div><div class="sc-val">' + (totalVol/1000).toFixed(1) + 't</div><div class="sc-lbl">Volumen total</div></div>' +
-            '<div class="stat-card"><div class="sc-icon">🔬</div><div class="sc-val">' + exNames.length + '</div><div class="sc-lbl">Ejercicios distintos</div></div>';
 
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card"><div class="sc-icon">🗓️</div><div class="sc-val">${totalSessions}</div><div class="sc-lbl">Sesiones</div></div>
+            <div class="stat-card"><div class="sc-icon">💪</div><div class="sc-val">${totalExercises}</div><div class="sc-lbl">Series totales</div></div>
+            <div class="stat-card"><div class="sc-icon">⚖️</div><div class="sc-val">${(totalVol/1000).toFixed(1)}t</div><div class="sc-lbl">Volumen total</div></div>
+            <div class="stat-card"><div class="sc-icon">🔬</div><div class="sc-val">${exNames.length}</div><div class="sc-lbl">Ejercicios distintos</div></div>`;
+
+        // Récords de carga por ejercicio
         const records = {};
-        workouts.forEach(w => w.exercises.forEach(ex => {
-            const kg = parseFloat(ex.weight) || 0;
-            if (!records[ex.name] || kg > records[ex.name].kg) records[ex.name] = { kg, date: w.date };
-        }));
-        const recSorted = Object.entries(records).sort((a,b) => b[1].kg - a[1].kg);
-        document.getElementById('recordsList').innerHTML = recSorted.map(([name,r]) =>
-            '<div class="record-item"><div><span class="record-name">' + name + '</span><span class="record-date">' + r.date.split('-').reverse().join('/') + '</span></div><span class="record-kg">' + r.kg + ' kg</span></div>'
-        ).join('');
+        workouts.forEach(w => {
+            w.exercises.forEach(ex => {
+                const kg = parseFloat(ex.weight)||0;
+                if(!records[ex.name] || kg > records[ex.name].kg)
+                    records[ex.name] = { kg, date: w.date };
+            });
+        });
+        const sortedRec = Object.entries(records).sort((a,b) => b[1].kg - a[1].kg).slice(0, 10);
+        document.getElementById('recordsList').innerHTML = sortedRec.length ? sortedRec.map(([name, rec], i) => `
+            <div class="record-row">
+                <span class="record-crown">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'　'}</span>
+                <span class="record-name">${name}</span>
+                <span class="record-val">${rec.kg} kg</span>
+                <span class="record-date">${rec.date.split('-').reverse().join('/')}</span>
+            </div>`).join('') : '<p style="color:#94a3b8;font-size:0.88rem;">Sin datos</p>';
 
+        // Volumen por semana (últimas 8)
+        function getMonday(d) {
+            const dt = new Date(d), day = dt.getDay()||7;
+            dt.setDate(dt.getDate() - day + 1);
+            return dt.toISOString().split('T')[0];
+        }
         const weekVol = {};
         workouts.forEach(w => {
-            const d = new Date(w.date), day = d.getDay() || 7;
-            const mon = new Date(d); mon.setDate(d.getDate() - day + 1);
-            const key = mon.toISOString().split('T')[0];
-            const vol = w.exercises.reduce((s,ex) => s+(parseFloat(ex.weight)||0)*(parseInt(ex.sets)||1)*(parseInt(ex.reps)||1),0);
-            weekVol[key] = (weekVol[key]||0) + vol;
+            const mon = getMonday(w.date);
+            const vol = w.exercises.reduce((s, ex) =>
+                s + (parseFloat(ex.weight)||0)*(parseInt(ex.sets)||1)*(parseInt(ex.reps)||1), 0);
+            weekVol[mon] = (weekVol[mon]||0) + vol;
         });
-        const weeks = Object.keys(weekVol).sort().slice(-8);
-        if (volChart) volChart.destroy();
+        const weeks      = Object.keys(weekVol).sort().slice(-8);
+        const weekLabels = weeks.map(w => { const d=new Date(w); return `${d.getDate()}/${d.getMonth()+1}`; });
+        const weekData   = weeks.map(w => weekVol[w]);
+
+        if(volChart) volChart.destroy();
         volChart = new Chart(document.getElementById('volChart'), {
             type: 'bar',
-            data: { labels: weeks.map(w => w.split('-').slice(1).reverse().join('/')), datasets: [{ label:'Volumen', data:weeks.map(w=>weekVol[w]), backgroundColor:'rgba(37,99,235,0.25)', borderColor:'#2563eb', borderWidth:2, borderRadius:6 }] },
-            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,title:{display:true,text:'kg·reps'}}} }
+            data: {
+                labels: weekLabels,
+                datasets: [{ label: 'Volumen (kg)', data: weekData, backgroundColor: 'rgba(37,99,235,0.7)', borderRadius: 6, borderSkipped: false }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { font:{size:10} }, grid: { color:'#f1f5f9' } },
+                    x: { ticks: { font:{size:10} }, grid: { display: false } }
+                }
+            }
         });
 
+        // Ejercicios más frecuentes
         const freq = {};
         workouts.forEach(w => w.exercises.forEach(ex => { freq[ex.name] = (freq[ex.name]||0)+1; }));
-        const top = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8);
-        const maxF = top[0]?.[1]||1;
-        document.getElementById('topExList').innerHTML = top.map(([name,count]) =>
-            '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:0.85rem;font-weight:600">' + name + '</span><span style="font-size:0.78rem;color:#64748b;font-weight:700">' + count + '×</span></div><div style="height:7px;background:#f1f5f9;border-radius:4px;overflow:hidden"><div style="height:100%;width:' + (count/maxF*100).toFixed(0) + '%;background:var(--primary);border-radius:4px"></div></div></div>'
-        ).join('');
+        const topEx  = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, 8);
+        const maxFreq = topEx[0]?.[1] || 1;
+        document.getElementById('topExList').innerHTML = topEx.map(([name, count]) => `
+            <div style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                    <span style="font-size:0.85rem;font-weight:600;color:var(--dark);">${name}</span>
+                    <span style="font-size:0.78rem;color:#64748b;font-weight:700;">${count}×</span>
+                </div>
+                <div style="height:7px;background:#f1f5f9;border-radius:4px;overflow:hidden;">
+                    <div style="height:100%;width:${(count/maxFreq*100).toFixed(0)}%;background:var(--primary);border-radius:4px;transition:width 0.4s;"></div>
+                </div>
+            </div>`).join('');
     }
-
-    // ── Medidas ──────────────────────────────────────────────
+    // ===== MEDIDAS =====
+    let medidas = JSON.parse(localStorage.getItem('gym_medidas')) || [];
     let activeMedida = 'hombros';
-    let medidaChart  = null;
-    const MEDIDA_LABELS = { hombros:'Hombros', pecho:'Pecho', biceps:'Bíceps', cintura:'Cintura', muslo:'Muslo', gemelo:'Gemelo' };
-    const MEDIDA_COLORS = { hombros:'#2563eb', pecho:'#7c3aed', biceps:'#0891b2', cintura:'#ef4444', muslo:'#16a34a', gemelo:'#d97706' };
+    let medidaChart = null;
 
+    const MEDIDA_LABELS = {
+        hombros: 'Hombros', pecho: 'Pecho', biceps: 'Bíceps',
+        cintura: 'Cintura', muslo: 'Muslo', gemelo: 'Gemelo'
+    };
+    const MEDIDA_COLORS = {
+        hombros: '#2563eb', pecho: '#7c3aed', biceps: '#0891b2',
+        cintura: '#ef4444', muslo: '#16a34a', gemelo: '#d97706'
+    };
+
+    // Inicializar fecha medidas
     (function() {
-        const h = new Date(), off = h.getTimezoneOffset();
-        const fl = new Date(h.getTime()-(off*60000)).toISOString().split('T')[0];
+        const hoy = new Date();
+        const offset = hoy.getTimezoneOffset();
+        const fechaLocal = new Date(hoy.getTime() - (offset*60*1000)).toISOString().split('T')[0];
         const el = document.getElementById('medidaDate');
-        if (el) el.value = fl;
+        if(el) el.value = fechaLocal;
     })();
 
-    async function saveMedidas() {
+    function saveMedidas() {
         const date = document.getElementById('medidaDate').value;
-        if (!date) return toast('Selecciona una fecha', 'err');
-        if (!SCRIPT_URL) return toast('Configura Google Sheets primero ⚙️', 'err');
+        if(!date) return alert('Selecciona una fecha');
+
         const campos = ['hombros','pecho','biceps','cintura','muslo','gemelo'];
-        const entry = { id: Date.now(), date };
+        const entry = { id: Date.now(), date: date };
         let alguno = false;
         campos.forEach(c => {
-            const v = document.getElementById('med-'+c).value;
-            if (v !== '') { entry[c] = parseFloat(v); alguno = true; }
+            const val = document.getElementById('med-' + c).value;
+            if(val !== '') { entry[c] = parseFloat(val); alguno = true; }
         });
-        if (!alguno) return toast('Introduce al menos una medida', 'err');
-        const idx = medidas.findIndex(m => m.date === date);
-        if (idx >= 0) campos.forEach(c => { if (entry[c] !== undefined) medidas[idx][c] = entry[c]; });
-        else medidas.push(entry);
-        // UI inmediata
-        campos.forEach(c => document.getElementById('med-'+c).value = '');
+        if(!alguno) return alert('Introduce al menos una medida');
+
+        // Si existe entrada del mismo día, actualizar
+        const existIdx = medidas.findIndex(m => m.date === date);
+        if(existIdx >= 0) {
+            campos.forEach(c => { if(entry[c] !== undefined) medidas[existIdx][c] = entry[c]; });
+        } else {
+            medidas.push(entry);
+        }
+
+        localStorage.setItem('gym_medidas', JSON.stringify(medidas));
+        campos.forEach(c => document.getElementById('med-' + c).value = '');
+        alert('Medidas guardadas');
         renderMedidasChart(activeMedida);
-        localStorage.setItem(cmKey(), JSON.stringify(medidas));
-        showBanner('Guardando medidas...', 'busy');
-        try {
-            await apiPost({ action: 'saveMedidas', data: medidas, user: getActiveUserId() });
-            showBanner('Medidas guardadas ✓', 'ok');
-        } catch(e) { showBanner('Error al guardar medidas', 'err'); }
     }
 
     function selectMedida(key, btn) {
         document.querySelectorAll('.medida-chip').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active'); activeMedida = key; renderMedidasChart(key);
+        btn.classList.add('active');
+        activeMedida = key;
+        renderMedidasChart(key);
     }
 
     function renderMedidasChart(key) {
-        const color = MEDIDA_COLORS[key]||'#2563eb', label = MEDIDA_LABELS[key]||key;
-        const pts = medidas.filter(m=>m[key]!==undefined).sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const color = MEDIDA_COLORS[key] || '#2563eb';
+        const label = MEDIDA_LABELS[key] || key;
+
+        // Filtrar entradas que tengan este campo
+        const pts = medidas
+            .filter(m => m[key] !== undefined)
+            .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        // Stat cards
         const statsEl = document.getElementById('medidaStatCards');
-        if (!pts.length) {
-            statsEl.innerHTML='';
-            document.getElementById('medidaHistTable').innerHTML='<p style="text-align:center;color:#94a3b8;margin:20px 0;font-size:0.88rem;">Sin registros para '+label+'</p>';
-            if(medidaChart){medidaChart.destroy();medidaChart=null;}
+        if(pts.length === 0) {
+            statsEl.innerHTML = '';
+            document.getElementById('medidaHistTable').innerHTML = '<p style="text-align:center;color:#94a3b8;margin:20px 0;font-size:0.88rem;">Sin registros aún para ' + label + '</p>';
+            if(medidaChart) { medidaChart.destroy(); medidaChart = null; }
             return;
         }
-        const vals=pts.map(p=>p[key]), ultimo=vals[vals.length-1], primero=vals[0];
-        const cambio=(ultimo-primero).toFixed(1), cambioStr=cambio>0?'+'+cambio:''+cambio;
-        statsEl.innerHTML=
-            '<div class="medida-stat-card"><div class="stat-label">Último</div><div class="stat-value">'+ultimo+'</div><div class="stat-unit">cm</div></div>'+
-            '<div class="medida-stat-card"><div class="stat-label">Cambio total</div><div class="stat-value" style="color:'+(cambio>=0?'#16a34a':'#ef4444')+'">'+cambioStr+'</div><div class="stat-unit">cm</div></div>'+
-            '<div class="medida-stat-card"><div class="stat-label">Registros</div><div class="stat-value">'+pts.length+'</div><div class="stat-unit">entradas</div></div>';
+
+        const vals = pts.map(p => p[key]);
+        const ultimo = vals[vals.length-1];
+        const primero = vals[0];
+        const maximo = Math.max(...vals);
+        const minimo = Math.min(...vals);
+        const cambio = (ultimo - primero).toFixed(1);
+        const cambioStr = cambio > 0 ? '+' + cambio : '' + cambio;
+
+        statsEl.innerHTML = `
+            <div class="medida-stat-card">
+                <div class="stat-label">Último</div>
+                <div class="stat-value">${ultimo}</div>
+                <div class="stat-unit">cm</div>
+            </div>
+            <div class="medida-stat-card">
+                <div class="stat-label">Cambio total</div>
+                <div class="stat-value" style="color:${cambio >= 0 ? '#16a34a' : '#ef4444'}">${cambioStr}</div>
+                <div class="stat-unit">cm</div>
+            </div>
+            <div class="medida-stat-card">
+                <div class="stat-label">Registros</div>
+                <div class="stat-value">${pts.length}</div>
+                <div class="stat-unit">entradas</div>
+            </div>`;
+
+        // Chart
         if(medidaChart) medidaChart.destroy();
-        medidaChart = new Chart(document.getElementById('medidaChart'),{
-            type:'line', data:{ labels:pts.map(p=>p.date.split('-').reverse().join('/')), datasets:[{label:label+' (cm)',data:vals,borderColor:color,backgroundColor:color+'18',tension:0.35,fill:true,pointRadius:5,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2}] },
-            options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'cm',color:'#94a3b8',font:{size:11}},ticks:{font:{size:11}}},x:{ticks:{font:{size:10}}}}}
+        medidaChart = new Chart(document.getElementById('medidaChart'), {
+            type: 'line',
+            data: {
+                labels: pts.map(p => p.date.split('-').reverse().join('/')),
+                datasets: [{
+                    label: label + ' (cm)',
+                    data: vals,
+                    borderColor: color,
+                    backgroundColor: color + '18',
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: color,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        title: { display: true, text: 'cm', color: '#94a3b8', font: { size: 11 } },
+                        ticks: { font: { size: 11 } }
+                    },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
         });
-        const sorted=[...pts].reverse();
-        document.getElementById('medidaHistTable').innerHTML='<table class="medida-hist-table" style="margin-top:20px"><thead><tr><th>Fecha</th><th>'+label+'</th><th>Variación</th></tr></thead><tbody>'+
-        sorted.map((p,i)=>{
-            const prev=sorted[i+1]; let diff='';
-            if(prev&&prev[key]!==undefined){const d=(p[key]-prev[key]).toFixed(1);diff=d>0?'<span class="medida-diff-pos">▲ +'+d+'</span>':d<0?'<span class="medida-diff-neg">▼ '+d+'</span>':'<span class="medida-diff-neu">— 0</span>';}
-            const f=i===0;
-            return '<tr><td style="'+(f?'font-weight:700;color:var(--primary)':'')+'">'+p.date.split('-').reverse().join('/')+'</td><td style="'+(f?'font-weight:700;color:var(--primary)':'')+'">'+p[key]+' cm</td><td>'+diff+'</td></tr>';
-        }).join('')+'</tbody></table>';
+
+        // Tabla historial
+        const sorted = [...pts].reverse();
+        const rows = sorted.map((p, i) => {
+            const prev = sorted[i+1];
+            let diff = '';
+            if(prev && prev[key] !== undefined) {
+                const d = (p[key] - prev[key]).toFixed(1);
+                if(d > 0) diff = `<span class="medida-diff-pos">▲ +${d}</span>`;
+                else if(d < 0) diff = `<span class="medida-diff-neg">▼ ${d}</span>`;
+                else diff = `<span class="medida-diff-neu">— 0</span>`;
+            }
+            const isFirst = i === 0;
+            return `<tr>
+                <td style="${isFirst ? 'font-weight:700;color:var(--primary)' : ''}">${p.date.split('-').reverse().join('/')}</td>
+                <td style="${isFirst ? 'font-weight:700;color:var(--primary)' : ''}">${p[key]} cm</td>
+                <td>${diff}</td>
+            </tr>`;
+        }).join('');
+
+        document.getElementById('medidaHistTable').innerHTML = `
+            <table class="medida-hist-table" style="margin-top:20px">
+                <thead><tr><th>Fecha</th><th>${label}</th><th>Variación</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
     }
 
-    // ── Boot ─────────────────────────────────────────────────
-    window.addEventListener('error', function() { hideBanner(); });
-    renderUserBadge();
-    renderUserListConfig();
-    updateExerciseSelectors();
-    loadAll();
 </script>
-
 </body>
 </html>
