@@ -627,6 +627,24 @@
     const fechaLocal = new Date(hoy.getTime() - (_off * 60000)).toISOString().split('T')[0];
     document.getElementById('workoutDate').value = fechaLocal;
 
+    // ── Normalize date from Google Sheets (may return Date object or ISO string) ──
+    function normalizeDate(raw) {
+        if (!raw) return '';
+        const s = String(raw).trim();
+        // Already in YYYY-MM-DD format
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+        // Try parsing as date and extract YYYY-MM-DD
+        try {
+            const d = new Date(s);
+            if (!isNaN(d.getTime())) {
+                const offset = d.getTimezoneOffset();
+                const local = new Date(d.getTime() - offset * 60000);
+                return local.toISOString().split('T')[0];
+            }
+        } catch(e) {}
+        return s;
+    }
+
     // ── Load all data from Google Sheets ─────────────────────
     async function loadAll() {
         if (!SCRIPT_URL) {
@@ -638,8 +656,8 @@
         setSyncStatus('spin', 'Conectando...');
         try {
             const [wR, mR] = await Promise.all([apiGet('getWorkouts'), apiGet('getMedidas')]);
-            workouts = wR.data || [];
-            medidas  = mR.data || [];
+            workouts = (wR.data || []).map(s => ({ ...s, date: normalizeDate(s.date) }));
+            medidas  = (mR.data || []).map(m => ({ ...m, date: normalizeDate(m.date) }));
             updateExerciseSelectors();
             setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}));
             toast('Datos cargados ✓', 'ok');
