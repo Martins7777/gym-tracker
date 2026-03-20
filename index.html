@@ -400,6 +400,20 @@
 <main>
     <section id="sec-log" class="card">
         <h3>Registrar Entrenamiento</h3>
+
+        <div id="configBanner">
+            <strong>⚙️ Conecta con Google Sheets</strong>
+            Pega la URL de tu Web App de Apps Script:
+            <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/XXXXXX/exec">
+            <button class="btn btn-primary" style="margin-top:6px;padding:8px" onclick="saveScriptUrl()">Guardar y Conectar</button>
+        </div>
+
+        <div id="syncBar">
+            <div class="sync-dot" id="syncDot"></div>
+            <span id="syncStatus">Sin configurar</span>
+            <span style="margin-left:auto;cursor:pointer;color:var(--primary);font-weight:600;font-size:0.78rem" onclick="openConfig()">⚙️ Configurar</span>
+        </div>
+
         <div style="margin-bottom: 15px;">
             <div><label>Fecha</label><input type="date" id="workoutDate" style="max-width:220px"></div>
         </div>
