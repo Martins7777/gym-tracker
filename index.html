@@ -390,7 +390,7 @@
     <div class="nav-links">
         <button onclick="showSection('history')">Historial</button>
         <button onclick="showSection('progress')">Progreso</button>
-        <button onclick="showSection('io')">Datos</button>
+        <button onclick="showSection('io')">Config</button>
         <button onclick="showSection('medidas')">Medidas</button>
         <button onclick="showSection('stats')">Estadísticas</button>
 		<button onclick="showSection('log')">+Registro</button>
@@ -400,19 +400,6 @@
 <main>
     <section id="sec-log" class="card">
         <h3>Registrar Entrenamiento</h3>
-
-        <div id="configBanner">
-            <strong>⚙️ Conecta con Google Sheets</strong>
-            Pega la URL de tu Web App de Apps Script:
-            <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/XXXXXX/exec">
-            <button class="btn btn-primary" style="margin-top:6px;padding:8px" onclick="saveScriptUrl()">Guardar y Conectar</button>
-        </div>
-
-        <div id="syncBar">
-            <div class="sync-dot" id="syncDot"></div>
-            <span id="syncStatus">Sin configurar</span>
-            <span style="margin-left:auto;cursor:pointer;color:var(--primary);font-weight:600;font-size:0.78rem" onclick="openConfig()">⚙️ Configurar</span>
-        </div>
 
         <div style="margin-bottom: 15px;">
             <div><label>Fecha</label><input type="date" id="workoutDate" style="max-width:220px"></div>
@@ -456,9 +443,28 @@
     </section>
 
     <section id="sec-io" class="card hidden">
-        <h3>Datos</h3>
-        <button class="btn btn-primary" style="background:var(--accent); margin-bottom:10px" onclick="exportData()">Exportar Backup</button>
-        <label>Importar Backup:</label>
+        <h3>Configuración</h3>
+
+        <!-- Google Sheets -->
+        <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 10px 0;">🔗 Conexión Google Sheets</p>
+
+        <div id="syncBar" style="margin-bottom:14px;">
+            <div class="sync-dot" id="syncDot"></div>
+            <span id="syncStatus">Sin configurar</span>
+        </div>
+
+        <div id="configBanner" style="display:block;">
+            <strong>URL de tu Web App (Apps Script)</strong>
+            <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/XXXXXX/exec">
+            <button class="btn btn-primary" style="margin-top:8px;padding:10px" onclick="saveScriptUrl()">Guardar y Conectar</button>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
+
+        <!-- Backup -->
+        <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px 0;">💾 Backup de datos</p>
+        <button class="btn btn-primary" style="background:var(--accent);margin-bottom:12px" onclick="exportData()">Exportar Backup JSON</button>
+        <label style="display:block;margin-bottom:6px;">Importar Backup:</label>
         <input type="file" id="importFile" accept=".json">
     </section>
 
@@ -552,12 +558,12 @@
         if (!v.startsWith('https://script.google.com')) return toast('URL no válida', 'err');
         SCRIPT_URL = v;
         localStorage.setItem(GS_KEY, v);
-        document.getElementById('configBanner').classList.remove('visible');
+        // banner stays visible in Config section
         toast('URL guardada ✓', 'ok');
         loadAll();
     }
     function openConfig() {
-        document.getElementById('configBanner').classList.add('visible');
+        showSection('io');
         document.getElementById('scriptUrlInput').value = SCRIPT_URL;
     }
     function setSyncStatus(state, text) {
