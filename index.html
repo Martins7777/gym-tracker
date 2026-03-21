@@ -1,181 +1,236 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYM TRACKER by AMS</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root { --primary: #2563eb; --dark: #1e293b; --light: #f8fafc; --danger: #ef4444; --accent: #f59e0b; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GYM TRACKER</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    :root { --primary:#2563eb; --dark:#1e293b; --light:#f8fafc; --danger:#ef4444; --accent:#f59e0b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--light); }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; flex-direction: column; color: var(--dark); }
+    /* ── LOGIN SCREEN ── */
+    #loginScreen { position:fixed; inset:0; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:9999; padding:16px; }
+    #loginScreen.hidden { display:none; }
+    #loginCard { background:white; border-radius:16px; padding:32px 28px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
+    #loginCard h2 { color:var(--primary); text-align:center; margin:0 0 4px 0; font-size:1.5rem; letter-spacing:-0.5px; }
+    #loginCard .login-sub { text-align:center; color:#94a3b8; font-size:0.8rem; margin:0 0 24px 0; }
+    #loginForm label, #loginNoUrl label { display:block; font-size:0.78rem; font-weight:700; color:#64748b; margin-bottom:5px; }
+    #loginForm input, #loginForm select, #loginNoUrl input { width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.95rem; margin-bottom:14px; }
+    #loginForm input:focus, #loginForm select:focus, #loginNoUrl input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
+    #loginBtn { width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer; transition:opacity 0.15s; }
+    #loginBtn:hover { opacity:0.9; }
+    #loginBtn:disabled { opacity:0.5; cursor:default; }
+    #loginError { margin-top:12px; background:#fee2e2; color:#991b1b; border-radius:8px; padding:10px 14px; font-size:0.83rem; font-weight:600; }
+    #loginError.hidden { display:none; }
+    #loginLoading { text-align:center; padding:20px 0; }
+    #loginLoading.hidden, #loginForm.hidden, #loginNoUrl.hidden { display:none; }
+    .login-spin { width:32px; height:32px; border:3px solid #e2e8f0; border-top-color:var(--primary); border-radius:50%; animation:spin 0.65s linear infinite; margin:0 auto 10px; }
+    #loginNoUrl p { color:#64748b; font-size:0.88rem; text-align:center; margin:0 0 16px 0; }
+    #loginNoUrl button { width:100%; padding:11px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:0.95rem; font-weight:700; cursor:pointer; }
 
-        /* ── NAV ── */
-        nav { width: 100%; background: var(--dark); color: white; padding: 10px; position: fixed; top: 0; z-index: 1000; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        nav h2 { color: var(--primary); margin: 0; font-size: 1.1rem; white-space: nowrap; }
-        .nav-links { display: flex; gap: 5px; width: 100%; justify-content: center; flex-wrap: wrap; }
-        nav button { padding: 8px 12px; border: none; background: #334155; color: white; cursor: pointer; border-radius: 6px; font-size: 0.8rem; flex: 1; min-width: 80px; }
-        @media (min-width: 600px) { nav { flex-direction: row; padding: 10px 155px 10px 20px; } nav h2 { font-size: 1.2rem; } nav button { font-size: 0.9rem; flex: none; } .nav-links { width: auto; flex: 1; } main { margin-top: 80px !important; } .grid-inputs { grid-template-columns: 2fr 1fr 1fr 1fr !important; } }
+    /* ── NAV ── */
+    nav { width:100%; background:var(--dark); color:white; padding:10px; position:fixed; top:0; z-index:1000; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2); }
+    nav.hidden { display:none; }
+    nav h2 { color:var(--primary); margin:0; font-size:1.1rem; white-space:nowrap; }
+    .nav-links { display:flex; gap:5px; width:100%; justify-content:center; flex-wrap:wrap; }
+    nav button { padding:8px 12px; border:none; background:#334155; color:white; cursor:pointer; border-radius:6px; font-size:0.8rem; flex:1; min-width:80px; }
+    @media (min-width:600px) {
+        nav { flex-direction:row; padding:10px 160px 10px 20px; }
+        nav h2 { font-size:1.2rem; }
+        nav button { font-size:0.9rem; flex:none; }
+        .nav-links { width:auto; flex:1; }
+        main { margin-top:80px !important; }
+        .grid-inputs { grid-template-columns:2fr 1fr 1fr 1fr !important; }
+    }
 
-        main { margin-top: 148px; padding: 15px; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; box-sizing: border-box; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .grid-inputs { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 15px; }
-        label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; color: #64748b; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        .btn { padding: 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; width: 100%; }
-        .btn-primary { background: var(--primary); color: white; }
-        .hidden { display: none; }
+    /* ── ADMIN BAR ── */
+    #adminBar { display:flex; align-items:center; gap:8px; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:4px 10px; flex-shrink:0; }
+    #adminBar.hidden { display:none; }
+    #adminBar span { color:rgba(255,255,255,0.6); font-size:0.72rem; white-space:nowrap; }
+    #adminBar select { background:transparent; border:none; color:white; font-weight:700; font-size:0.8rem; cursor:pointer; padding:2px 0; outline:none; max-width:120px; }
+    #adminBar select option { background:var(--dark); color:white; }
 
-        /* ── SYNC BANNER ── */
-        #syncBanner { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 8px 14px; border-radius: 10px; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); z-index: 9999; pointer-events: none; opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; }
-        #syncBanner.show { opacity: 1; transform: translateY(0); }
-        #syncBanner.ok   { border-left: 3px solid #16a34a; }
-        #syncBanner.err  { border-left: 3px solid #ef4444; background: #450a0a; }
-        #syncBanner.busy { border-left: 3px solid #f59e0b; }
-        .sb-spin { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.65s linear infinite; flex-shrink: 0; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+    /* ── GS ACTION BUTTONS ── */
+    #gsButtons { display:flex; gap:6px; flex-shrink:0; align-items:center; }
+    .gs-btn { display:flex; align-items:center; gap:5px; padding:5px 11px; border-radius:16px; border:1px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.1); color:white; font-size:0.72rem; font-weight:600; cursor:pointer; transition:background 0.15s; white-space:nowrap; flex:none; min-width:0; }
+    .gs-btn:hover { background:rgba(255,255,255,0.22); }
+    .gs-btn.has-changes { border-color:#f59e0b; background:rgba(245,158,11,0.2); }
+    .gs-btn.has-changes:hover { background:rgba(245,158,11,0.35); }
+    .gs-btn svg { flex-shrink:0; }
+    @media (max-width:599px) { #gsButtons { justify-content:center; } #gsButtons .gs-btn span { display:none; } }
 
-        /* ── USER BADGE ── */
-        #userBadge { position: fixed; top: 10px; right: 12px; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22); border-radius: 20px; padding: 4px 10px 4px 6px; cursor: pointer; z-index: 1100; transition: background 0.15s; user-select: none; }
-        #userBadge:hover { background: rgba(255,255,255,0.22); }
-        .u-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: white; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        #userBadgeName { color: white; font-size: 0.76rem; font-weight: 600; max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    main { margin-top:148px; padding:15px; max-width:1000px; width:100%; margin-left:auto; margin-right:auto; }
+    main.hidden { display:none; }
+    .card { background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.05); margin-bottom:20px; }
+    .grid-inputs { display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:15px; }
+    label { display:block; font-size:0.8rem; font-weight:bold; margin-bottom:5px; color:#64748b; }
+    input, select { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; font-size:1rem; }
+    .btn { padding:12px; border-radius:6px; cursor:pointer; border:none; font-weight:600; width:100%; }
+    .btn-primary { background:var(--primary); color:white; }
+    .btn-danger { background:var(--danger); color:white; }
+    .hidden { display:none; }
 
-        /* ── USER DROPDOWN ── */
-        #userDropdown { position: fixed; top: 48px; right: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.13); z-index: 1200; min-width: 175px; overflow: hidden; display: none; }
-        #userDropdown.open { display: block; }
-        .ud-head { padding: 9px 14px 5px; font-size: 0.67rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
-        .ud-user { display: flex; align-items: center; gap: 9px; padding: 9px 14px; cursor: pointer; font-size: 0.85rem; color: #1e293b; transition: background 0.1s; }
-        .ud-user:hover { background: #f8fafc; }
-        .ud-user.active { background: #eff6ff; color: var(--primary); font-weight: 700; }
-        .ud-sep { border: none; border-top: 1px solid #f1f5f9; margin: 3px 0; }
-        .ud-action { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; font-size: 0.82rem; color: #64748b; transition: background 0.1s; }
-        .ud-action:hover { background: #f8fafc; }
+    /* ── SYNC BANNER ── */
+    #syncBanner { position:fixed; bottom:20px; right:20px; background:#1e293b; color:white; padding:8px 14px; border-radius:10px; font-size:0.78rem; font-weight:600; display:flex; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:9999; pointer-events:none; opacity:0; transform:translateY(10px); transition:opacity 0.2s,transform 0.2s; }
+    #syncBanner.show { opacity:1; transform:translateY(0); }
+    #syncBanner.ok  { border-left:3px solid #16a34a; }
+    #syncBanner.err { border-left:3px solid #ef4444; background:#450a0a; }
+    #syncBanner.busy { border-left:3px solid #f59e0b; }
+    .sb-spin { width:12px; height:12px; border:2px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:spin 0.65s linear infinite; flex-shrink:0; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
-        /* ── SYNC STATUS DOT ── */
-        .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; flex-shrink: 0; display: inline-block; }
-        .sync-dot.ok   { background: #16a34a; }
-        .sync-dot.err  { background: #ef4444; }
-        .sync-dot.spin { background: #f59e0b; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.35} }
+    /* ── USER BADGE ── */
+    #userBadge { position:fixed; top:10px; right:12px; display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22); border-radius:20px; padding:4px 10px 4px 6px; cursor:pointer; z-index:1100; transition:background 0.15s; user-select:none; }
+    #userBadge:hover { background:rgba(255,255,255,0.22); }
+    #userBadge.hidden { display:none; }
+    .u-avatar { width:24px; height:24px; border-radius:50%; background:var(--primary); color:white; font-size:0.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    #userBadgeName { color:white; font-size:0.76rem; font-weight:600; max-width:100px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-        /* ── HISTORIAL ── */
-        .session-card { border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
-        .session-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
-        .session-header-date { font-size: 0.92rem; font-weight: 700; color: #f1f5f9; }
-        .btn-delete-session { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 5px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-        .btn-delete-session:hover { background: rgba(239,68,68,0.28); }
-        .ex-rows { padding: 4px 14px 10px; }
-        .ex-row { display: flex; align-items: center; gap: 8px; padding: 9px 2px; border-bottom: 1px solid #f1f5f9; }
-        .ex-row:last-child { border-bottom: none; }
-        .ex-row-name { flex: 1; min-width: 0; }
-        .exercise-link { color: var(--primary); font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; }
-        .exercise-link::after { content: "↗"; font-size: 0.68rem; opacity: 0.55; }
-        .exercise-link:hover { color: #1d4ed8; }
-        .ex-pills { display: flex; gap: 5px; flex-shrink: 0; }
-        .ex-pill { background: #f1f5f9; border-radius: 6px; padding: 3px 8px; font-size: 0.76rem; font-weight: 600; color: #334155; white-space: nowrap; }
-        .ex-pill em { font-style: normal; font-weight: 400; color: #94a3b8; font-size: 0.7rem; }
-        .ex-row-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-        .btn-edit { border: 1px solid #e2e8f0; background: none; color: var(--primary); font-size: 0.73rem; font-weight: 600; border-radius: 6px; padding: 4px 9px; cursor: pointer; }
-        .btn-edit:hover { background: #eff6ff; }
-        .btn-del-ex { border: 1px solid #fee2e2; background: none; color: #ef4444; font-size: 0.78rem; border-radius: 6px; padding: 4px 7px; cursor: pointer; line-height: 1; }
-        .btn-del-ex:hover { background: #fee2e2; }
-        .edit-input { width: 58px !important; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 0.83rem; text-align: center; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.77rem; font-weight: 600; cursor: pointer; }
+    /* ── USER DROPDOWN ── */
+    #userDropdown { position:fixed; top:48px; right:12px; background:white; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.13); z-index:1200; min-width:185px; overflow:hidden; display:none; }
+    #userDropdown.open { display:block; }
+    .ud-head { padding:9px 14px 5px; font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; }
+    .ud-user { display:flex; align-items:center; gap:9px; padding:9px 14px; cursor:pointer; font-size:0.85rem; color:#1e293b; transition:background 0.1s; }
+    .ud-user:hover { background:#f8fafc; }
+    .ud-user.active { background:#eff6ff; color:var(--primary); font-weight:700; }
+    .ud-sep { border:none; border-top:1px solid #f1f5f9; margin:3px 0; }
+    .ud-action { display:flex; align-items:center; gap:8px; padding:9px 14px; cursor:pointer; font-size:0.82rem; color:#64748b; transition:background 0.1s; }
+    .ud-action:hover { background:#f8fafc; }
+    .ud-action.danger { color:var(--danger); }
+    .ud-action.danger:hover { background:#fef2f2; }
 
-        /* ── PROGRESS TABLE ── */
-        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .history-table th { background: #f1f5f9; padding: 10px; font-size: 0.7rem; color: #64748b; text-transform: uppercase; }
-        .history-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.9rem; white-space: nowrap; }
+    /* ── SYNC STATUS DOT ── */
+    .sync-dot { width:8px; height:8px; border-radius:50%; background:#94a3b8; flex-shrink:0; display:inline-block; }
+    .sync-dot.ok   { background:#16a34a; }
+    .sync-dot.err  { background:#ef4444; }
+    .sync-dot.spin { background:#f59e0b; animation:pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.35} }
 
-        /* ── EX HISTORY PANEL ── */
-        #exHistoryPanel { margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px; display: none; }
-        #exHistoryPanel .panel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-        .panel-title { font-size: 0.85rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
-        .ex-name-badge { background: #eff6ff; color: var(--primary); font-size: 0.8rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; border: 1px solid #bfdbfe; }
-        #exHistoryRows { display: flex; flex-direction: column; gap: 6px; }
-        .ex-hist-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; }
-        .ex-hist-row:first-child { background: #eff6ff; border-color: #bfdbfe; }
-        .ex-hist-date { color: #64748b; font-size: 0.78rem; }
-        .ex-hist-val { text-align: center; font-weight: 600; color: var(--dark); }
-        .ex-hist-val span { font-weight: 400; font-size: 0.75rem; color: #94a3b8; }
-        .ex-hist-row:first-child .ex-hist-val { color: var(--primary); }
-        .ex-hist-empty { text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 12px 0; }
-        .ex-hist-col-header { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 0 12px; margin-bottom: 4px; }
-        .ex-hist-col-header span { font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; text-align: center; }
-        .ex-hist-col-header span:first-child { text-align: left; }
+    /* ── HISTORIAL ── */
+    .session-card { border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; margin-bottom:12px; }
+    .session-header { background:#f8fafc; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
+    .session-date { font-weight:700; font-size:0.9rem; color:var(--dark); }
+    .session-count { font-size:0.75rem; color:#94a3b8; }
+    .ex-row { padding:8px 14px; border-top:1px solid #f1f5f9; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .ex-name { font-weight:600; font-size:0.88rem; color:#1e293b; flex:1; min-width:100px; cursor:pointer; }
+    .ex-name:hover { color:var(--primary); text-decoration:underline; }
+    .ex-pills { display:flex; gap:5px; flex-wrap:wrap; }
+    .ex-pill { background:#f1f5f9; border-radius:12px; padding:3px 9px; font-size:0.75rem; color:#475569; font-weight:600; }
+    .btn-sm { padding:4px 9px; border:none; border-radius:6px; cursor:pointer; font-size:0.72rem; font-weight:600; }
+    .btn-edit { background:#e0f2fe; color:#0369a1; }
+    .btn-del  { background:#fee2e2; color:#dc2626; }
+    .edit-inline { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .edit-inline input { width:70px; padding:4px 6px; font-size:0.8rem; height:28px; }
+    .btn-save-edit { background:#dcfce7; color:#15803d; }
 
-        /* ── MEDIDAS ── */
-        .medidas-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
-        @media (min-width: 600px) { .medidas-grid { grid-template-columns: repeat(3, 1fr); } }
-        .medida-input-group { display: flex; flex-direction: column; }
-        .medida-input-group label { font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
-        .medida-input-group input { padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; width: 100%; }
-        .medidas-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-        .medida-chip { padding: 6px 16px; border-radius: 20px; border: 1.5px solid #cbd5e1; background: white; font-size: 0.82rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.15s; }
-        .medida-chip.active { background: var(--primary); border-color: var(--primary); color: white; }
-        .medida-hist-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        .medida-hist-table th { background: #f1f5f9; padding: 9px 10px; font-size: 0.7rem; color: #64748b; text-transform: uppercase; }
-        .medida-hist-table td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.88rem; }
-        .medida-hist-table tr:first-child td { font-weight: 700; color: var(--primary); }
-        .medida-diff-pos { color: #16a34a; font-size: 0.78rem; font-weight: 600; }
-        .medida-diff-neg { color: var(--danger); font-size: 0.78rem; font-weight: 600; }
-        .medida-diff-neu { color: #94a3b8; font-size: 0.78rem; }
-        .medida-stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .medida-stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 10px; text-align: center; }
-        .medida-stat-card .stat-label { font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-        .medida-stat-card .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--dark); }
-        .medida-stat-card .stat-unit { font-size: 0.72rem; color: #94a3b8; }
+    /* ── PROGRESO ── */
+    .prog-user-btn { padding:5px 12px; border-radius:20px; border:2px solid #ccc; background:white; cursor:pointer; font-size:0.78rem; font-weight:600; transition:all 0.15s; }
+    #progressUserSelector { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; min-height:28px; }
+    .progress-loading { text-align:center; padding:20px; color:#94a3b8; font-size:0.88rem; }
 
-        /* ── STATS ── */
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-        @media (min-width: 600px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
-        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 12px; text-align: center; }
-        .stat-card .sc-icon { font-size: 1.5rem; margin-bottom: 6px; }
-        .stat-card .sc-val { font-size: 1.4rem; font-weight: 800; color: var(--primary); line-height: 1; }
-        .stat-card .sc-lbl { font-size: 0.68rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
-        .record-item { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 6px; }
-        .record-item:first-child { background: #eff6ff; border-color: #bfdbfe; }
-        .record-name { font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; }
-        .record-date { font-size: 0.72rem; color: #94a3b8; }
-        .record-kg { font-size: 1rem; font-weight: 800; color: var(--primary); }
-        .section-divider { border: none; border-top: 1px solid #f1f5f9; margin: 20px 0; }
+    /* ── ESTADÍSTICAS ── */
+    .stat-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-bottom:20px; }
+    .stat-card { background:#f8fafc; border-radius:10px; padding:14px; text-align:center; }
+    .stat-emoji { font-size:1.5rem; }
+    .stat-val { font-size:1.4rem; font-weight:800; color:var(--primary); margin:4px 0 2px; }
+    .stat-lbl { font-size:0.72rem; color:#94a3b8; font-weight:600; text-transform:uppercase; }
+    .record-table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:10px; }
+    .record-table th { text-align:left; padding:6px 10px; background:#f8fafc; font-size:0.72rem; color:#94a3b8; text-transform:uppercase; }
+    .record-table td { padding:7px 10px; border-top:1px solid #f1f5f9; }
 
-        /* ── USER LIST CONFIG ── */
-        .user-config-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
-        .user-config-row.is-active { background: #eff6ff; border-color: #bfdbfe; }
-        .user-config-name { flex: 1; font-size: 0.88rem; font-weight: 500; color: #1e293b; }
-        .user-config-name.is-active { font-weight: 700; color: var(--primary); }
-        .btn-del-user { border: none; background: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 6px; }
+    /* ── MEDIDAS ── */
+    .medida-chip { padding:6px 14px; border-radius:16px; border:2px solid #e2e8f0; background:white; cursor:pointer; font-size:0.8rem; font-weight:600; color:#64748b; transition:all 0.15s; }
+    .medida-chip.active { border-color:var(--primary); background:#eff6ff; color:var(--primary); }
+    .medida-input-group { display:flex; flex-direction:column; gap:4px; }
+    .stat-change { font-size:0.78rem; }
+    .stat-change.up   { color:#16a34a; }
+    .stat-change.down { color:#ef4444; }
 
-        /* ── GS ACTION BUTTONS ── */
-        #gsButtons { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
-        .gs-btn { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.1); color: white; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap; flex: none; min-width: 0; }
-        .gs-btn:hover { background: rgba(255,255,255,0.22); }
-        .gs-btn.has-changes { border-color: #f59e0b; background: rgba(245,158,11,0.2); }
-        .gs-btn.has-changes:hover { background: rgba(245,158,11,0.35); }
-        .gs-btn svg { flex-shrink: 0; }
-        @media (max-width: 599px) { #gsButtons { justify-content: center; } #gsButtons .gs-btn span { display: none; } }
-    </style>
+    /* ── ADMIN PANEL ── */
+    .admin-user-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f1f5f9; }
+    .admin-user-row:last-child { border-bottom:none; }
+    .admin-user-info { flex:1; }
+    .admin-user-name { font-weight:700; font-size:0.9rem; color:#1e293b; }
+    .admin-user-id { font-size:0.72rem; color:#94a3b8; }
+    .admin-add-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+    @media (max-width:400px) { .admin-add-grid { grid-template-columns:1fr; } }
+
+    /* ── CONFIG ── */
+    .gs-status-row { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:0.8rem; color:#64748b; }
+    .user-config-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+    .user-config-row:last-child { border-bottom:none; }
+
+    /* ── EXERCISE HISTORY PANEL ── */
+    #exHistoryPanel { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; margin-bottom:12px; display:none; }
+    #exHistoryPanel h4 { margin:0 0 8px; font-size:0.8rem; color:#64748b; text-transform:uppercase; }
+    .ex-hist-row { display:flex; justify-content:space-between; font-size:0.82rem; padding:3px 0; border-bottom:1px solid #f1f5f9; }
+    .ex-hist-row:last-child { border-bottom:none; }
+    .ex-hist-latest { color:var(--primary); font-weight:700; }
+</style>
 </head>
 <body>
 
-<!-- Sync banner (non-blocking) -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- LOGIN SCREEN                                                   -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="loginScreen">
+    <div id="loginCard">
+        <h2>GYM TRACKER</h2>
+        <p class="login-sub">by AMS</p>
+
+        <!-- Cargando lista de usuarios -->
+        <div id="loginLoading">
+            <div class="login-spin"></div>
+            <p style="color:#94a3b8;font-size:0.83rem;margin:0">Conectando con Google Sheets...</p>
+        </div>
+
+        <!-- Formulario de login -->
+        <div id="loginForm" class="hidden">
+            <label>Usuario</label>
+            <select id="loginUserSelect">
+                <option value="">Selecciona usuario...</option>
+            </select>
+            <label>Contraseña</label>
+            <input type="password" id="loginPassword" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()">
+            <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Entrar</button>
+            <div id="loginError" class="hidden"></div>
+        </div>
+
+        <!-- Sin URL configurada -->
+        <div id="loginNoUrl" class="hidden">
+            <p>Introduce la URL de tu Google Apps Script para comenzar.</p>
+            <label>URL del Web App</label>
+            <input type="text" id="loginUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+            <button onclick="saveLoginUrl()">Guardar y Conectar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SYNC BANNER                                                    -->
+<!-- ══════════════════════════════════════════════════════════════ -->
 <div id="syncBanner"><div class="sb-spin" id="sbSpin" style="display:none"></div><span id="sbText"></span></div>
 
-<!-- User badge + dropdown -->
-<div id="userBadge" onclick="toggleUserDropdown()">
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- USER BADGE + DROPDOWN                                          -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="userBadge" class="hidden" onclick="toggleUserDropdown()">
     <div class="u-avatar" id="userAvatar">?</div>
     <span id="userBadgeName">—</span>
 </div>
 <div id="userDropdown">
-    <div class="ud-head">Cambiar usuario</div>
+    <div class="ud-head" id="udRoleLabel">Usuario</div>
     <div id="udUserList"></div>
     <hr class="ud-sep">
-    <div class="ud-action" onclick="openAddUser()">＋ Añadir usuario</div>
+    <div class="ud-action danger" onclick="doLogout()">&#x2715; Cerrar sesión</div>
 </div>
 
-<nav>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- NAV                                                            -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<nav id="appNav" class="hidden">
     <h2>GYM TRACKER by AMS</h2>
     <div class="nav-links">
         <button onclick="showSection('history')">Historial</button>
@@ -184,104 +239,113 @@
         <button onclick="showSection('medidas')">Medidas</button>
         <button onclick="showSection('stats')">Estadísticas</button>
         <button onclick="showSection('log')">+Registro</button>
+        <button id="btnAdmin" class="hidden" onclick="showSection('admin')" style="background:rgba(245,158,11,0.3);color:#fcd34d;">Admin</button>
+    </div>
+    <div id="adminBar" class="hidden">
+        <span>Contexto:</span>
+        <select id="adminContextSelect" onchange="adminSwitchContext()"></select>
     </div>
     <div id="gsButtons">
         <button class="gs-btn" id="btnRefresh" onclick="gsRefresh()" title="Cargar datos desde Google Sheets">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
             <span>Refresh</span>
         </button>
-        <button class="gs-btn" id="btnSave" onclick="gsSaveAll()" title="Guardar todos los datos en Google Sheets">
+        <button class="gs-btn" id="btnSave" onclick="gsSave()" title="Guardar en Google Sheets">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             <span>Guardar</span>
         </button>
     </div>
 </nav>
 
-<main>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- MAIN                                                           -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<main id="appMain" class="hidden">
 
     <!-- REGISTRO -->
-    <section id="sec-log" class="card">
-        <h3>Registrar Entrenamiento</h3>
-        <div style="margin-bottom:15px;">
-            <div><label>Fecha</label><input type="date" id="workoutDate" style="max-width:220px"></div>
-        </div>
-        <div class="grid-inputs">
-            <div><label>Ejercicio</label><input type="text" id="exName" list="exHistoryList" autocomplete="off"><datalist id="exHistoryList"></datalist></div>
-            <div><label>Peso (kg)</label><input type="number" id="exWeight" min="0" step="0.5"></div>
-            <div><label>Series</label><input type="number" id="exSets" min="1"></div>
-            <div><label>Reps</label><input type="number" id="exReps" min="1"></div>
-        </div>
-        <button class="btn btn-primary" onclick="addExercise()">Añadir Ejercicio</button>
-        <div id="exHistoryPanel">
-            <div class="panel-header">
-                <span class="panel-title">Últimas sesiones de</span>
-                <span class="ex-name-badge" id="exNameBadge"></span>
+    <section id="sec-log">
+        <div class="card">
+            <h3 style="margin:0 0 15px">Registrar Entrenamiento</h3>
+            <div class="grid-inputs">
+                <div><label>Fecha</label><input type="date" id="workoutDate"></div>
+                <div style="position:relative">
+                    <label>Ejercicio</label>
+                    <input type="text" id="exName" placeholder="Nombre del ejercicio" autocomplete="off" list="exHistoryList">
+                    <datalist id="exHistoryList"></datalist>
+                </div>
+                <div><label>Peso (kg)</label><input type="number" step="0.5" id="exWeight" placeholder="0"></div>
+                <div><label>Series</label><input type="number" id="exSets" placeholder="0"></div>
+                <div><label>Reps</label><input type="number" id="exReps" placeholder="0"></div>
             </div>
-            <div class="ex-hist-col-header">
-                <span>Fecha</span><span>Peso</span><span>Series</span><span>Reps</span>
+            <div id="exHistoryPanel">
+                <h4>Últimas veces — <span id="exHistoryTitle"></span></h4>
+                <div id="exHistoryList2"></div>
             </div>
-            <div id="exHistoryRows"></div>
+            <button class="btn btn-primary" onclick="addExercise()">+ Añadir ejercicio</button>
         </div>
     </section>
 
     <!-- HISTORIAL -->
-    <section id="sec-history" class="card hidden">
-        <h3>Historial</h3>
-        <div id="historyList"></div>
+    <section id="sec-history" class="hidden">
+        <div class="card">
+            <h3 style="margin:0 0 15px">Historial de sesiones</h3>
+            <div id="historyList"></div>
+        </div>
     </section>
 
     <!-- PROGRESO -->
-    <section id="sec-progress" class="card hidden">
-        <h3>Progreso</h3>
-        <div id="progressUserSelector"></div>
-        <select id="progressSelect" onchange="renderChart()" style="margin-bottom:20px;"></select>
-        <div style="position:relative;height:300px;width:100%;"><canvas id="progressChart"></canvas></div>
-        <div id="exerciseSpecificHistory"></div>
+    <section id="sec-progress" class="hidden">
+        <div class="card">
+            <h3 style="margin:0 0 10px">Progreso por Ejercicio</h3>
+            <div id="progressUserSelector"></div>
+            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:15px">
+                <div style="flex:1;min-width:150px">
+                    <label>Ejercicio</label>
+                    <select id="progressSelect" onchange="renderChart()"><option>—</option></select>
+                </div>
+            </div>
+            <canvas id="progressChart"></canvas>
+            <div id="exerciseSpecificHistory"></div>
+        </div>
     </section>
 
     <!-- CONFIG -->
-    <section id="sec-io" class="card hidden">
-        <h3>Configuración</h3>
+    <section id="sec-io" class="hidden">
+        <div class="card">
+            <h3 style="margin:0 0 15px">Configuración</h3>
 
-        <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 10px 0;">🔗 Conexión Google Sheets</p>
-        <div id="syncBar" style="margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:0.74rem;color:#64748b;">
-            <div class="sync-dot" id="syncDot"></div>
-            <span id="syncStatus">Sin configurar</span>
-        </div>
-        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:0.84rem;color:#92400e;">
-            <strong style="display:block;margin-bottom:6px;">URL de tu Web App (Apps Script)</strong>
-            <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/XXXXXX/exec" style="width:100%;padding:8px 10px;border:1px solid #fcd34d;border-radius:6px;font-size:0.83rem;margin:8px 0;box-sizing:border-box;background:white;">
-            <button class="btn btn-primary" style="margin-top:8px;padding:10px" onclick="saveScriptUrl()">Guardar y Conectar</button>
-        </div>
+            <!-- GS URL -->
+            <div style="background:#fefce8;border:1px solid #fcd34d;border-radius:10px;padding:16px;margin-bottom:20px">
+                <strong style="display:block;margin-bottom:6px">URL de tu Web App (Apps Script)</strong>
+                <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/XXXXXX/exec" style="margin:8px 0;border:1px solid #fcd34d">
+                <button class="btn btn-primary" style="margin-top:8px;padding:10px" onclick="saveScriptUrl()">Guardar y Conectar</button>
+                <div class="gs-status-row"><span class="sync-dot" id="syncDot"></span><span id="syncStatus">—</span></div>
+            </div>
 
-        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
-        <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px 0;">👤 Usuarios</p>
-        <div id="userListConfig" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
-        <div id="addUserForm" style="display:none;margin-bottom:14px;">
-            <input type="text" id="newUserName" placeholder="Nombre del usuario" style="margin-bottom:8px;">
-            <div style="display:flex;gap:8px;">
-                <button class="btn btn-primary" style="padding:9px" onclick="confirmAddUser()">Añadir</button>
-                <button class="btn" style="padding:9px;background:#f1f5f9;color:#64748b" onclick="cancelAddUser()">Cancelar</button>
+            <!-- Backup -->
+            <div style="border-top:1px solid #e2e8f0;padding-top:20px">
+                <h4 style="margin:0 0 10px">Backup de datos</h4>
+                <p style="font-size:0.83rem;color:#64748b;margin:0 0 12px">Exporta o importa datos en formato JSON (backup local).</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <button class="btn btn-primary" style="flex:1;min-width:120px;padding:10px" onclick="exportData()">&#x2193; Exportar JSON</button>
+                    <label class="btn" style="flex:1;min-width:120px;padding:10px;background:#f1f5f9;color:#1e293b;cursor:pointer;text-align:center">
+                        &#x2191; Importar JSON
+                        <input type="file" id="importFile" accept=".json" style="display:none">
+                    </label>
+                </div>
             </div>
         </div>
-        <button class="btn btn-primary" style="padding:9px;max-width:180px" onclick="openAddUser()">＋ Añadir usuario</button>
-
-        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
-        <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px 0;">💾 Backup de datos</p>
-        <button class="btn btn-primary" style="background:var(--accent);margin-bottom:12px" onclick="exportData()">Exportar Backup JSON</button>
-        <label style="display:block;margin-bottom:6px;">Importar Backup:</label>
-        <input type="file" id="importFile" accept=".json">
     </section>
 
     <!-- MEDIDAS -->
-    <section id="sec-medidas" class="card hidden">
-        <h3>Medidas Corporales</h3>
-        <div style="margin-bottom:20px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <label style="margin:0;font-size:0.8rem;font-weight:700;color:#64748b;">FECHA</label>
-                <input type="date" id="medidaDate" style="width:auto;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.9rem;">
+    <section id="sec-medidas" class="hidden">
+        <div class="card">
+            <h3 style="margin:0 0 15px">Medidas Corporales</h3>
+            <div style="margin-bottom:15px">
+                <label>Fecha</label>
+                <input type="date" id="medidaDate" style="max-width:200px">
             </div>
-            <div class="medidas-grid">
+            <div class="grid-inputs" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr))">
                 <div class="medida-input-group"><label>Hombros (cm)</label><input type="number" step="0.1" id="med-hombros" placeholder="—"></div>
                 <div class="medida-input-group"><label>Pecho (cm)</label><input type="number" step="0.1" id="med-pecho" placeholder="—"></div>
                 <div class="medida-input-group"><label>Bíceps (cm)</label><input type="number" step="0.1" id="med-biceps" placeholder="—"></div>
@@ -291,9 +355,8 @@
             </div>
             <button class="btn btn-primary" onclick="saveMedidas()">Guardar Medidas</button>
         </div>
-        <div style="border-top:1px solid #e2e8f0;padding-top:20px;">
-            <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 10px 0;">Ver evolución de:</p>
-            <div class="medidas-selector">
+        <div class="card" style="margin-top:0">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="medidaChips">
                 <button class="medida-chip active" onclick="selectMedida('hombros',this)">Hombros</button>
                 <button class="medida-chip" onclick="selectMedida('pecho',this)">Pecho</button>
                 <button class="medida-chip" onclick="selectMedida('biceps',this)">Bíceps</button>
@@ -301,210 +364,603 @@
                 <button class="medida-chip" onclick="selectMedida('muslo',this)">Muslo</button>
                 <button class="medida-chip" onclick="selectMedida('gemelo',this)">Gemelo</button>
             </div>
-            <div class="medida-stat-cards" id="medidaStatCards"></div>
-            <div style="position:relative;height:260px;width:100%;"><canvas id="medidaChart"></canvas></div>
-            <div id="medidaHistTable"></div>
+            <div id="medidaStatCards"></div>
+            <canvas id="medidaChart"></canvas>
+            <div id="medidaHistoryTable" style="margin-top:16px"></div>
         </div>
     </section>
 
     <!-- ESTADÍSTICAS -->
-    <section id="sec-stats" class="card hidden">
-        <h3>Estadísticas Globales</h3>
-        <div class="stats-grid" id="statsGrid"></div>
-        <hr class="section-divider">
-        <p style="font-size:0.8rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px 0;">🏆 Récords de Carga</p>
-        <div id="recordsList"></div>
-        <hr class="section-divider">
-        <p style="font-size:0.8rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px 0;">📅 Volumen últimas 8 semanas</p>
-        <p style="font-size:0.75rem;color:#94a3b8;margin:0 0 10px 0;">Volumen = kg × series × reps</p>
-        <div style="position:relative;height:200px;"><canvas id="volChart"></canvas></div>
-        <hr class="section-divider">
-        <p style="font-size:0.8rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px 0;">🔥 Ejercicios más frecuentes</p>
-        <div id="topExList"></div>
+    <section id="sec-stats" class="hidden">
+        <div class="card">
+            <h3 style="margin:0 0 15px">Estadísticas Globales</h3>
+            <div id="statsContent"></div>
+            <canvas id="volChart" style="margin-top:20px"></canvas>
+        </div>
+    </section>
+
+    <!-- ADMIN PANEL -->
+    <section id="sec-admin" class="hidden">
+        <div class="card">
+            <h3 style="margin:0 0 15px;color:var(--accent)">&#9876; Administración de Usuarios</h3>
+            <div id="adminUserList"></div>
+            <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:8px">
+                <h4 style="margin:0 0 12px;font-size:0.9rem">Añadir nuevo usuario</h4>
+                <div class="admin-add-grid">
+                    <div><label>Nombre</label><input type="text" id="adminNewName" placeholder="Nombre del usuario"></div>
+                    <div><label>Contraseña</label><input type="text" id="adminNewPass" placeholder="1234" value="1234"></div>
+                </div>
+                <button class="btn btn-primary" style="padding:10px" onclick="adminAddUser()">+ Añadir Usuario</button>
+            </div>
+        </div>
     </section>
 
 </main>
 
 <script>
 // ================================================================
-//  GYM TRACKER — Multi-usuario v3
-//  Arquitectura: cada usuario tiene su propio espacio de datos.
-//  El estado activo (workouts, medidas) siempre pertenece al usuario
-//  activo. switchUser() es la única función que cambia ese estado.
+//  GYM TRACKER v3 — Auth + GS-only data layer
 // ================================================================
 
-// ── GOOGLE SHEETS CONFIG ─────────────────────────────────────────
+// ── GS CONFIG ────────────────────────────────────────────────────
 var GS_URL_KEY = 'gym_gs_url';
 var SCRIPT_URL = localStorage.getItem(GS_URL_KEY) || '';
 
-function saveScriptUrl() {
-    var v = document.getElementById('scriptUrlInput').value.trim();
-    if (!v.startsWith('https://script.google.com')) { showBanner('URL no válida', 'err'); return; }
-    SCRIPT_URL = v;
-    localStorage.setItem(GS_URL_KEY, v);
-    showBanner('URL guardada ✓ — pulsa Refresh para cargar datos', 'ok');
-}
+// ── AUTH STATE (sourced from sessionStorage) ──────────────────────
+var SESSION_KEY  = 'gym_session';
+var SESSION_ROLE = '';   // 'user' | 'admin'
+var SESSION_UID  = '';   // uid of logged-in regular user; '' for admin
+var SESSION_NAME = '';   // display name
 
-function setSyncStatus(state, text) {
-    var dot = document.getElementById('syncDot');
-    var lbl = document.getElementById('syncStatus');
-    if (dot) dot.className = 'sync-dot ' + (state || '');
-    if (lbl) lbl.textContent = text;
-}
+// ── MULTI-USER DATA ───────────────────────────────────────────────
+var allUsers          = [];   // [{id, name}]  — no passwords
+var allUsersWithPass  = [];   // [{id, name, password}] — admin only
+var allWorkoutsMap    = {};   // {uid: [sessions...]} — for Progress tab
+var allWorkoutsLoaded = false;
+var adminContextUid   = '';   // UID of the user the admin is currently viewing
 
-// ── SYNC BANNER ──────────────────────────────────────────────────
+// ── ACTIVE USER DATA (always belongs to current context) ──────────
+var workouts = [];
+var medidas  = [];
+
+// ── PROGRESS / CHARTS ─────────────────────────────────────────────
+var selectedProgressUsers = [];
+var USER_COLORS = ['#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2','#db2777'];
+var chartInstance;
+var volChartInst;
+
+// ── MEDIDAS ───────────────────────────────────────────────────────
+var activeMedida     = 'hombros';
+var medidaChartInst;
+var MLABELS = { hombros:'Hombros', pecho:'Pecho', biceps:'Bíceps', cintura:'Cintura', muslo:'Muslo', gemelo:'Gemelo' };
+var MCOLORS = { hombros:'#2563eb', pecho:'#16a34a', biceps:'#d97706', cintura:'#dc2626', muslo:'#7c3aed', gemelo:'#0891b2' };
+
+// ── SYNC STATE ────────────────────────────────────────────────────
+var _syncToken  = 0;
+var _hasUnsaved = false;
 var _bannerT;
-function showBanner(msg, type) {
-    var el   = document.getElementById('syncBanner');
-    var spin = document.getElementById('sbSpin');
-    var txt  = document.getElementById('sbText');
-    clearTimeout(_bannerT);
-    txt.textContent = msg;
-    el.className = 'show ' + (type || 'busy');
-    spin.style.display = (type === 'busy') ? 'block' : 'none';
-    if (type === 'ok') { _bannerT = setTimeout(function() { el.className = ''; }, 2000); }
+
+// ── HELPER: returns the UID of whoever is being viewed right now ──
+function getContextUid() {
+    return SESSION_ROLE === 'admin' ? adminContextUid : SESSION_UID;
 }
 
-// ── FETCH WITH TIMEOUT ───────────────────────────────────────────
+// ── HELPER: user initials ─────────────────────────────────────────
+function initials(name) {
+    return (name || '?').split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0,2);
+}
+
+// ================================================================
+//  NETWORK HELPERS
+// ================================================================
+
 function fetchT(url, opts, ms) {
-    ms = ms || 12000;
+    ms = ms || 15000;
     var ctrl  = new AbortController();
     var timer = setTimeout(function() { ctrl.abort(); }, ms);
     return fetch(url, Object.assign({}, opts || {}, { signal: ctrl.signal, redirect: 'follow' }))
            .finally(function() { clearTimeout(timer); });
 }
+
 async function gsGet(action, uid) {
-    if (!SCRIPT_URL) throw new Error('Sin URL');
-    // _t= prevents stale cached responses from proxies / GS CDN
+    if (!SCRIPT_URL) throw new Error('Sin URL configurada');
     var url = SCRIPT_URL + '?action=' + encodeURIComponent(action)
-            + '&user=' + encodeURIComponent(uid)
+            + '&user=' + encodeURIComponent(uid || '')
             + '&_t=' + Date.now();
     var r = await fetchT(url);
     var d = JSON.parse(await r.text());
     if (d.error) throw new Error(d.error);
     return d;
 }
+
 async function gsPost(body) {
-    if (!SCRIPT_URL) throw new Error('Sin URL');
-    var r = await fetchT(SCRIPT_URL, { method: 'POST', body: JSON.stringify(body) });
+    if (!SCRIPT_URL) throw new Error('Sin URL configurada');
+    var r = await fetchT(SCRIPT_URL, { method:'POST', body: JSON.stringify(body) });
     var d = JSON.parse(await r.text());
     if (d.error) throw new Error(d.error);
     return d;
 }
 
-// ── USER MANAGEMENT ──────────────────────────────────────────────
-var USERS_KEY  = 'gym_users';
-var ACTIVE_KEY = 'gym_active_uid';
+// ================================================================
+//  AUTH — LOGIN SCREEN
+// ================================================================
 
-function getUsers() {
-    try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch(e) { return []; }
+function initLoginScreen() {
+    document.getElementById('loginLoading').classList.remove('hidden');
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('loginNoUrl').classList.add('hidden');
+    document.getElementById('loginError').classList.add('hidden');
+
+    if (!SCRIPT_URL) {
+        document.getElementById('loginLoading').classList.add('hidden');
+        document.getElementById('loginNoUrl').classList.remove('hidden');
+        return;
+    }
+
+    gsGet('getUsers', '').then(function(res) {
+        var users = res.data || [];
+        var sel   = document.getElementById('loginUserSelect');
+        sel.innerHTML = '<option value="">Selecciona usuario...</option>';
+        users.forEach(function(u) {
+            var o = document.createElement('option');
+            o.value = u.id;
+            o.textContent = u.name;
+            sel.appendChild(o);
+        });
+        // Admin option always at the bottom
+        var adminOpt = document.createElement('option');
+        adminOpt.value = 'admin';
+        adminOpt.textContent = 'Admin';
+        sel.appendChild(adminOpt);
+
+        document.getElementById('loginLoading').classList.add('hidden');
+        document.getElementById('loginForm').classList.remove('hidden');
+    }).catch(function(e) {
+        document.getElementById('loginLoading').classList.add('hidden');
+        var errEl = document.getElementById('loginError');
+        var msg = e.message || '';
+        if (msg.indexOf('desconocida') !== -1 || msg.indexOf('unknown') !== -1) {
+            errEl.textContent = 'El script de Google no está actualizado. Copia el código de google-appscript.txt en script.google.com y haz una NUEVA implementación.';
+        } else if (msg.indexOf('Failed to fetch') !== -1 || msg.indexOf('NetworkError') !== -1 || msg.indexOf('aborted') !== -1) {
+            errEl.textContent = 'No se puede conectar con Google. Comprueba que la URL es correcta y que el script está publicado como "Cualquier usuario".';
+        } else {
+            errEl.textContent = 'Error al conectar: ' + msg + '. Verifica la URL y que el script esté actualizado.';
+        }
+        errEl.classList.remove('hidden');
+        document.getElementById('loginNoUrl').classList.remove('hidden');
+        document.getElementById('loginUrlInput').value = SCRIPT_URL;
+    });
 }
-function saveUsers(arr) { localStorage.setItem(USERS_KEY, JSON.stringify(arr)); }
-function getActiveUid() { return localStorage.getItem(ACTIVE_KEY) || (getUsers()[0] || {}).id || ''; }
-function setActiveUid(id) { localStorage.setItem(ACTIVE_KEY, id); }
-function getActiveUser() {
-    var uid = getActiveUid();
-    return getUsers().find(function(u) { return u.id === uid; }) || getUsers()[0] || { id: '', name: '—' };
+
+async function doLogin() {
+    var uid  = document.getElementById('loginUserSelect').value;
+    var pass = document.getElementById('loginPassword').value;
+    var errEl = document.getElementById('loginError');
+
+    errEl.classList.add('hidden');
+    if (!uid)  { errEl.textContent = 'Selecciona un usuario.'; errEl.classList.remove('hidden'); return; }
+    if (!pass) { errEl.textContent = 'Introduce tu contraseña.'; errEl.classList.remove('hidden'); return; }
+
+    var btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.textContent = 'Entrando...';
+
+    try {
+        var res = await gsPost({ action: 'login', user: uid, password: pass });
+        var d   = res.data;
+        if (!d || !d.ok) throw new Error('Contraseña incorrecta');
+
+        // Cache users-with-pass for admin
+        if (d.role === 'admin' && d.users) {
+            allUsersWithPass = d.users;
+            allUsers = allUsersWithPass.map(function(u) { return { id: u.id, name: u.name }; });
+        }
+
+        completeLogin(d.role, d.uid || '', d.name);
+    } catch(e) {
+        errEl.textContent = e.message || 'Error de autenticación';
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+        document.getElementById('loginPassword').value = '';
+    }
 }
-function initials(name) {
-    return (name || '?').split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+
+function completeLogin(role, uid, name) {
+    SESSION_ROLE = role;
+    SESSION_UID  = uid;
+    SESSION_NAME = name;
+
+    // Persist session (cleared when browser tab closes)
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: role, uid: uid, name: name }));
+
+    // Show app
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appNav').classList.remove('hidden');
+    document.getElementById('appMain').classList.remove('hidden');
+    document.getElementById('userBadge').classList.remove('hidden');
+
+    postLoginInit();
 }
 
-// Per-user localStorage keys
-function keyW(uid) { return 'gym_w_' + uid; }
-function keyM(uid) { return 'gym_m_' + uid; }
+async function postLoginInit() {
+    var today = todayLocal();
+    document.getElementById('workoutDate').value = today;
+    document.getElementById('medidaDate').value  = today;
+    document.getElementById('scriptUrlInput').value = SCRIPT_URL;
+    if (SCRIPT_URL) setSyncStatus('ok', 'URL configurada');
+    else             setSyncStatus('err', 'Sin URL');
 
-// ── ACTIVE STATE — always belongs to the active user ─────────────
-var workouts = [];   // active user's workouts
-var medidas  = [];   // active user's medidas
+    showBanner('Cargando datos...', 'busy');
 
-// Load active user data from localStorage (zero async, zero latency)
-function loadActiveUserFromCache() {
-    var uid = getActiveUid();
-    try { workouts = JSON.parse(localStorage.getItem(keyW(uid))) || []; } catch(e) { workouts = []; }
-    try { medidas  = JSON.parse(localStorage.getItem(keyM(uid))) || []; } catch(e) { medidas  = []; }
+    try {
+        // Fetch user list if not already loaded
+        if (allUsers.length === 0) {
+            if (SESSION_ROLE === 'admin') {
+                var ar = await gsGet('getUsersAdmin', '');
+                allUsersWithPass = ar.data || [];
+                allUsers = allUsersWithPass.map(function(u) { return { id: u.id, name: u.name }; });
+            } else {
+                var ur = await gsGet('getUsers', '');
+                allUsers = ur.data || [];
+            }
+        }
+
+        // Set default admin context
+        if (SESSION_ROLE === 'admin') {
+            if (!adminContextUid && allUsers.length > 0) adminContextUid = allUsers[0].id;
+            setupAdminUI();
+        }
+
+        // Load context user data
+        var ctxUid = getContextUid();
+        if (ctxUid) await gsRefreshUser(ctxUid);
+
+        // Pre-select all users for Progress
+        selectedProgressUsers = allUsers.map(function(u) { return u.id; });
+
+        renderUserBadge();
+        renderUserDropdown();
+        updateExerciseSelectors();
+        setSyncStatus('ok', 'Listo · ' + new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' }));
+        showBanner('Bienvenido/a, ' + SESSION_NAME + ' \u2713', 'ok');
+    } catch(e) {
+        setSyncStatus('err', 'Error de conexión');
+        showBanner('Error al cargar datos: ' + e.message, 'err');
+    }
 }
 
-// Save active user data to localStorage
-function saveActiveUserToCache() {
-    var uid = getActiveUid();
-    localStorage.setItem(keyW(uid), JSON.stringify(workouts));
-    localStorage.setItem(keyM(uid), JSON.stringify(medidas));
-}
-
-// ── THE CORE FUNCTION: switch user ───────────────────────────────
-// This is the ONLY place that changes the active user.
-// It loads the new user's data and refreshes all visible UI.
-function switchUser(id) {
-    if (id === getActiveUid()) { closeDropdown(); return; }
-
-    // Invalidate any in-flight GS sync for the previous user
+function doLogout() {
+    // Clear everything
+    sessionStorage.removeItem(SESSION_KEY);
+    SESSION_ROLE = ''; SESSION_UID = ''; SESSION_NAME = '';
+    adminContextUid = '';
+    allUsers = []; allUsersWithPass = [];
+    allWorkoutsMap = {}; allWorkoutsLoaded = false;
+    workouts = []; medidas = [];
+    selectedProgressUsers = [];
+    _hasUnsaved = false;
     _syncToken++;
+    markSaved();
 
-    setActiveUid(id);
-    selectedProgressUsers = [id];  // reset comparison to the new active user
-    loadActiveUserFromCache();   // load new user data synchronously — no async
-    closeDropdown();
-    renderUserBadge();
-    renderUserDropdown();
-    renderUserListConfig();
-    refreshAllUI();              // re-render everything with new user's data
-    // No auto-sync: user presses Refresh manually
+    // Destroy charts
+    if (chartInstance)   { chartInstance.destroy();   chartInstance   = null; }
+    if (volChartInst)    { volChartInst.destroy();    volChartInst    = null; }
+    if (medidaChartInst) { medidaChartInst.destroy(); medidaChartInst = null; }
+
+    // Hide app
+    document.getElementById('appNav').classList.add('hidden');
+    document.getElementById('appMain').classList.add('hidden');
+    document.getElementById('userBadge').classList.add('hidden');
+    document.getElementById('userDropdown').classList.remove('open');
+    document.getElementById('adminBar').classList.add('hidden');
+    document.getElementById('btnAdmin').classList.add('hidden');
+
+    // Reset login form
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+
+    initLoginScreen();
 }
 
-// Refresh ALL sections with current workouts/medidas
-function refreshAllUI() {
-    updateExerciseSelectors();
-    renderExHistoryPanel('');
-    // Re-render the currently visible section
-    var active = document.querySelector('main section:not(.hidden)');
-    if (active) { triggerSectionRender(active.id.replace('sec-', '')); }
+function saveLoginUrl() {
+    var v = document.getElementById('loginUrlInput').value.trim();
+    if (!v.startsWith('https://script.google.com')) {
+        alert('URL no válida. Debe empezar por https://script.google.com');
+        return;
+    }
+    SCRIPT_URL = v;
+    localStorage.setItem(GS_URL_KEY, v);
+    initLoginScreen();
 }
 
-function triggerSectionRender(id) {
-    if (id === 'history')  { renderHistory(); }
-    if (id === 'progress') { initProgressUsers(); renderProgressUserSelector(); updateProgressExerciseSelector(); renderChart(); }
-    if (id === 'medidas')  { renderMedidasChart(activeMedida); }
-    if (id === 'stats')    { renderStats(); }
-    if (id === 'log')      { updateExerciseSelectors(); }
+function saveScriptUrl() {
+    var v = document.getElementById('scriptUrlInput').value.trim();
+    if (!v.startsWith('https://script.google.com')) { showBanner('URL no válida', 'err'); return; }
+    SCRIPT_URL = v;
+    localStorage.setItem(GS_URL_KEY, v);
+    showBanner('URL guardada \u2713 — pulsa Refresh para cargar datos', 'ok');
+    setSyncStatus('ok', 'URL configurada');
 }
 
-// ── USER UI ──────────────────────────────────────────────────────
+// ================================================================
+//  ADMIN FUNCTIONS
+// ================================================================
+
+function setupAdminUI() {
+    document.getElementById('btnAdmin').classList.remove('hidden');
+    document.getElementById('adminBar').classList.remove('hidden');
+
+    var sel = document.getElementById('adminContextSelect');
+    sel.innerHTML = '';
+    allUsers.forEach(function(u) {
+        var o = document.createElement('option');
+        o.value = u.id;
+        o.textContent = u.name;
+        if (u.id === adminContextUid) o.selected = true;
+        sel.appendChild(o);
+    });
+}
+
+async function adminSwitchContext() {
+    var uid = document.getElementById('adminContextSelect').value;
+    if (!uid || uid === adminContextUid) return;
+    adminContextUid = uid;
+    showBanner('Cambiando contexto...', 'busy');
+    try {
+        await gsRefreshUser(uid);
+        renderUserBadge();
+        refreshAllUI();
+        showBanner('Contexto: ' + (allUsers.find(function(u){ return u.id===uid; })||{name:'?'}).name + ' \u2713', 'ok');
+    } catch(e) {
+        showBanner('Error al cargar usuario: ' + e.message, 'err');
+    }
+}
+
+function renderAdminPanel() {
+    var el = document.getElementById('adminUserList');
+    if (!el) return;
+    if (allUsers.length === 0) { el.innerHTML = '<p style="color:#94a3b8">No hay usuarios registrados.</p>'; return; }
+    var html = '';
+    allUsers.forEach(function(u) {
+        var isCtx = (u.id === adminContextUid);
+        html += '<div class="admin-user-row">'
+              + '<div class="u-avatar" style="width:32px;height:32px;font-size:0.8rem;flex-shrink:0">' + initials(u.name) + '</div>'
+              + '<div class="admin-user-info">'
+              + '<div class="admin-user-name">' + u.name + (isCtx ? ' <span style="font-size:0.72rem;color:var(--accent)">(activo)</span>' : '') + '</div>'
+              + '<div class="admin-user-id">' + u.id + '</div>'
+              + '</div>'
+              + '<button class="btn-sm btn-edit" onclick="adminSwitchContextTo(\'' + u.id + '\')">Ver</button>'
+              + '<button class="btn-sm btn-del" onclick="adminDeleteUser(\'' + u.id + '\')">Eliminar</button>'
+              + '</div>';
+    });
+    el.innerHTML = html;
+}
+
+function adminSwitchContextTo(uid) {
+    document.getElementById('adminContextSelect').value = uid;
+    adminSwitchContext();
+}
+
+async function adminAddUser() {
+    var name = document.getElementById('adminNewName').value.trim();
+    var pass = document.getElementById('adminNewPass').value.trim() || '1234';
+    if (!name) { showBanner('Introduce un nombre para el usuario', 'err'); return; }
+
+    var newUser = { id: 'u_' + Date.now(), name: name, password: pass };
+    var updatedList = allUsersWithPass.concat([newUser]);
+
+    showBanner('Creando usuario...', 'busy');
+    try {
+        await gsPost({ action: 'saveUsers', data: updatedList });
+        allUsersWithPass = updatedList;
+        allUsers = updatedList.map(function(u) { return { id: u.id, name: u.name }; });
+        selectedProgressUsers = allUsers.map(function(u) { return u.id; });
+        document.getElementById('adminNewName').value = '';
+        setupAdminUI();
+        renderAdminPanel();
+        renderUserDropdown();
+        showBanner('Usuario "' + name + '" creado \u2713', 'ok');
+    } catch(e) {
+        showBanner('Error al crear usuario: ' + e.message, 'err');
+    }
+}
+
+async function adminDeleteUser(uid) {
+    var u = allUsers.find(function(u){ return u.id === uid; });
+    if (!u) return;
+    if (!confirm('¿Eliminar a "' + u.name + '" y todos sus datos? Esta acción no se puede deshacer.')) return;
+
+    showBanner('Eliminando usuario...', 'busy');
+    try {
+        var updatedList = allUsersWithPass.filter(function(u){ return u.id !== uid; });
+        await gsPost({ action: 'saveUsers',   data: updatedList });
+        await gsPost({ action: 'saveWorkouts', user: uid, data: [] });
+        await gsPost({ action: 'saveMedidas',  user: uid, data: [] });
+
+        allUsersWithPass = updatedList;
+        allUsers = updatedList.map(function(u){ return { id: u.id, name: u.name }; });
+        delete allWorkoutsMap[uid];
+        selectedProgressUsers = allUsers.map(function(u){ return u.id; });
+
+        // If we deleted the current context, switch to first user
+        if (adminContextUid === uid && allUsers.length > 0) {
+            adminContextUid = allUsers[0].id;
+            await gsRefreshUser(adminContextUid);
+        } else if (allUsers.length === 0) {
+            workouts = []; medidas = [];
+        }
+
+        setupAdminUI();
+        renderAdminPanel();
+        renderUserBadge();
+        renderUserDropdown();
+        refreshAllUI();
+        showBanner('Usuario eliminado \u2713', 'ok');
+    } catch(e) {
+        showBanner('Error al eliminar: ' + e.message, 'err');
+    }
+}
+
+// ================================================================
+//  GS DATA FUNCTIONS
+// ================================================================
+
+// Load workouts + medidas for one user into global state
+async function gsRefreshUser(uid) {
+    var token = ++_syncToken;
+    try {
+        var res = await Promise.all([gsGet('getWorkouts', uid), gsGet('getMedidas', uid)]);
+        if (token !== _syncToken) return; // stale
+        workouts = (res[0].data || []).map(function(s){ return Object.assign({}, s, { date: normDate(s.date) }); });
+        medidas  = (res[1].data || []).map(function(m){ return Object.assign({}, m, { date: normDate(m.date) }); });
+    } catch(e) {
+        if (token !== _syncToken) return;
+        throw e;
+    }
+}
+
+// Load all users' workouts for Progress tab (lazy)
+async function gsLoadAllWorkouts() {
+    var token = ++_syncToken;
+    try {
+        var res = await gsGet('getAllWorkouts', '');
+        if (token !== _syncToken) return;
+        var raw = res.data || {};
+        allWorkoutsMap = {};
+        Object.keys(raw).forEach(function(uid) {
+            allWorkoutsMap[uid] = (raw[uid] || []).map(function(s){
+                return Object.assign({}, s, { date: normDate(s.date) });
+            });
+        });
+        allWorkoutsLoaded = true;
+    } catch(e) {
+        if (token !== _syncToken) return;
+        throw e;
+    }
+}
+
+// Refresh button: reload current context from GS
+async function gsRefresh() {
+    if (!SCRIPT_URL) { showBanner('Configura la URL en Config', 'err'); return; }
+
+    var token = ++_syncToken;
+    var btn   = document.getElementById('btnRefresh');
+    if (btn) btn.style.opacity = '0.5';
+    setSyncStatus('spin', 'Cargando...');
+    showBanner('Cargando desde Google Sheets...', 'busy');
+
+    try {
+        var ctxUid = getContextUid();
+        if (!ctxUid) throw new Error('No hay usuario activo');
+
+        // Reload context user data
+        var res = await Promise.all([gsGet('getWorkouts', ctxUid), gsGet('getMedidas', ctxUid)]);
+        if (token !== _syncToken) return;
+        workouts = (res[0].data || []).map(function(s){ return Object.assign({}, s, { date: normDate(s.date) }); });
+        medidas  = (res[1].data || []).map(function(m){ return Object.assign({}, m, { date: normDate(m.date) }); });
+
+        // Also update allWorkoutsMap for this user
+        allWorkoutsMap[ctxUid] = workouts;
+
+        // If Progress tab is open or already loaded, refresh all workouts
+        var activeSection = document.querySelector('main section:not(.hidden)');
+        if (allWorkoutsLoaded || (activeSection && activeSection.id === 'sec-progress')) {
+            var allRes = await gsGet('getAllWorkouts', '');
+            if (token !== _syncToken) return;
+            var raw = allRes.data || {};
+            allWorkoutsMap = {};
+            Object.keys(raw).forEach(function(uid) {
+                allWorkoutsMap[uid] = (raw[uid] || []).map(function(s){
+                    return Object.assign({}, s, { date: normDate(s.date) });
+                });
+            });
+            allWorkoutsLoaded = true;
+        }
+
+        if (token !== _syncToken) return;
+
+        markSaved();
+        refreshAllUI();
+        setSyncStatus('ok', 'Actualizado · ' + new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' }));
+        showBanner('Datos actualizados \u2713', 'ok');
+    } catch(e) {
+        if (token !== _syncToken) return;
+        setSyncStatus('err', 'Error de conexión');
+        showBanner('Error al conectar: ' + e.message, 'err');
+    } finally {
+        if (btn) btn.style.opacity = '';
+    }
+}
+
+// Save button: push current context data to GS
+async function gsSave() {
+    if (!SCRIPT_URL) { showBanner('Configura la URL en Config', 'err'); return; }
+
+    var ctxUid = getContextUid();
+    if (!ctxUid) { showBanner('No hay usuario activo', 'err'); return; }
+
+    var btn = document.getElementById('btnSave');
+    if (btn) btn.style.opacity = '0.5';
+    showBanner('Guardando en Google Sheets...', 'busy');
+    setSyncStatus('spin', 'Guardando...');
+
+    try {
+        await gsPost({ action: 'saveWorkouts', user: ctxUid, data: workouts });
+        await gsPost({ action: 'saveMedidas',  user: ctxUid, data: medidas  });
+        // Update allWorkoutsMap for this user after save
+        allWorkoutsMap[ctxUid] = workouts;
+        markSaved();
+        setSyncStatus('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' }));
+        showBanner('Guardado en Google Sheets \u2713', 'ok');
+    } catch(e) {
+        setSyncStatus('err', 'Error al guardar');
+        showBanner('Error al guardar: ' + e.message, 'err');
+    } finally {
+        if (btn) btn.style.opacity = '';
+    }
+}
+
+// ================================================================
+//  USER UI
+// ================================================================
+
 function renderUserBadge() {
-    var u = getActiveUser();
-    document.getElementById('userAvatar').textContent    = initials(u.name);
-    document.getElementById('userBadgeName').textContent = u.name;
+    var av = document.getElementById('userAvatar');
+    var nm = document.getElementById('userBadgeName');
+    if (SESSION_ROLE === 'admin') {
+        if (av) av.textContent = 'A';
+        if (av) av.style.background = 'var(--accent)';
+        if (nm) nm.textContent = 'Admin';
+    } else {
+        if (av) { av.textContent = initials(SESSION_NAME); av.style.background = ''; }
+        if (nm) nm.textContent = SESSION_NAME;
+    }
 }
 
 function renderUserDropdown() {
-    var users = getUsers();
-    var uid   = getActiveUid();
-    var html  = '';
-    users.forEach(function(u) {
-        html += '<div class="ud-user' + (u.id === uid ? ' active' : '') + '" onclick="switchUser(\'' + u.id + '\')">'
-              + '<div class="u-avatar" style="width:22px;height:22px;font-size:0.68rem">' + initials(u.name) + '</div>'
-              + u.name + '</div>';
-    });
-    document.getElementById('udUserList').innerHTML = html;
-}
+    var roleLabel = document.getElementById('udRoleLabel');
+    var list      = document.getElementById('udUserList');
+    if (!list) return;
 
-function renderUserListConfig() {
-    var users  = getUsers();
-    var uid    = getActiveUid();
-    var el     = document.getElementById('userListConfig');
-    if (!el) return;
-    var html = '';
-    users.forEach(function(u) {
-        var isActive = u.id === uid;
-        html += '<div class="user-config-row' + (isActive ? ' is-active' : '') + '">'
-              + '<div class="u-avatar" style="width:28px;height:28px;font-size:0.78rem;flex-shrink:0">' + initials(u.name) + '</div>'
-              + '<span class="user-config-name' + (isActive ? ' is-active' : '') + '">' + u.name
-              + (isActive ? ' <span style="font-size:0.7rem;color:#94a3b8;font-weight:400">(activo)</span>' : '') + '</span>'
-              + (users.length > 1 && !isActive
-                  ? '<button class="btn-del-user" onclick="deleteUser(\'' + u.id + '\')">✕</button>'
-                  : '') + '</div>';
-    });
-    el.innerHTML = html;
+    if (SESSION_ROLE === 'admin') {
+        if (roleLabel) roleLabel.textContent = 'Administrador';
+        var html = '<div class="ud-user active"><div class="u-avatar" style="width:22px;height:22px;font-size:0.68rem;background:var(--accent)">A</div>Admin</div>';
+        html += '<hr class="ud-sep"><div class="ud-head">Cambiar contexto</div>';
+        allUsers.forEach(function(u) {
+            var isCtx = (u.id === adminContextUid);
+            html += '<div class="ud-user' + (isCtx ? ' active' : '') + '" onclick="adminSwitchContextTo(\'' + u.id + '\');closeDropdown()">'
+                  + '<div class="u-avatar" style="width:22px;height:22px;font-size:0.68rem">' + initials(u.name) + '</div>'
+                  + u.name + '</div>';
+        });
+        list.innerHTML = html;
+    } else {
+        if (roleLabel) roleLabel.textContent = 'Usuario activo';
+        list.innerHTML = '<div class="ud-user active">'
+                       + '<div class="u-avatar" style="width:22px;height:22px;font-size:0.68rem">' + initials(SESSION_NAME) + '</div>'
+                       + SESSION_NAME + '</div>';
+    }
 }
 
 function toggleUserDropdown() {
@@ -519,547 +975,589 @@ document.addEventListener('click', function(e) {
     if (dd && badge && !dd.contains(e.target) && !badge.contains(e.target)) dd.classList.remove('open');
 });
 
-function openAddUser() {
-    closeDropdown();
-    showSection('io');
-    document.getElementById('addUserForm').style.display = 'block';
-    document.getElementById('newUserName').focus();
-}
-function cancelAddUser() {
-    document.getElementById('addUserForm').style.display = 'none';
-    document.getElementById('newUserName').value = '';
-}
-function confirmAddUser() {
-    var name = document.getElementById('newUserName').value.trim();
-    if (!name) { showBanner('Introduce un nombre', 'err'); return; }
-    var users = getUsers();
-    var id    = 'u_' + Date.now();
-    users.push({ id: id, name: name });
-    saveUsers(users);
-    cancelAddUser();
-    renderUserListConfig();
-    renderUserDropdown();
-    showBanner('Usuario "' + name + '" añadido ✓', 'ok');
-}
-function deleteUser(id) {
-    if (!confirm('¿Eliminar este usuario y todos sus datos?')) return;
-    var users = getUsers().filter(function(u) { return u.id !== id; });
-    saveUsers(users);
-    localStorage.removeItem(keyW(id));
-    localStorage.removeItem(keyM(id));
-    renderUserListConfig();
-    renderUserDropdown();
-    showBanner('Usuario eliminado', 'ok');
-}
+// ================================================================
+//  NAVIGATION
+// ================================================================
 
-// ── NAVIGATION ───────────────────────────────────────────────────
 function showSection(id) {
     document.querySelectorAll('main section').forEach(function(s) { s.classList.add('hidden'); });
-    document.getElementById('sec-' + id).classList.remove('hidden');
+    var target = document.getElementById('sec-' + id);
+    if (target) target.classList.remove('hidden');
     triggerSectionRender(id);
-    if (id === 'io') { renderUserListConfig(); document.getElementById('scriptUrlInput').value = SCRIPT_URL; }
+    if (id === 'io') { document.getElementById('scriptUrlInput').value = SCRIPT_URL; }
     window.scrollTo(0, 0);
+    closeDropdown();
 }
+
+function triggerSectionRender(id) {
+    if (id === 'history')  { renderHistory(); }
+    if (id === 'progress') { triggerProgressRender(); }
+    if (id === 'medidas')  { renderMedidasChart(activeMedida); }
+    if (id === 'stats')    { renderStats(); }
+    if (id === 'log')      { updateExerciseSelectors(); }
+    if (id === 'admin')    { renderAdminPanel(); }
+}
+
+function triggerProgressRender() {
+    initProgressUsers();
+    renderProgressUserSelector();
+    if (!allWorkoutsLoaded) {
+        document.getElementById('exerciseSpecificHistory').innerHTML =
+            '<div class="progress-loading"><div class="login-spin" style="margin:10px auto"></div>Cargando datos de todos los usuarios...</div>';
+        gsLoadAllWorkouts().then(function() {
+            updateProgressExerciseSelector();
+            renderChart();
+        }).catch(function(e) {
+            document.getElementById('exerciseSpecificHistory').innerHTML =
+                '<p style="color:var(--danger);padding:16px">Error al cargar: ' + e.message + '</p>';
+        });
+    } else {
+        updateProgressExerciseSelector();
+        renderChart();
+    }
+}
+
 function goToProgress(name) {
     showSection('progress');
-    setTimeout(function() { document.getElementById('progressSelect').value = name; renderChart(); }, 80);
+    var sel = document.getElementById('progressSelect');
+    for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === name) { sel.selectedIndex = i; break; }
+    }
+    if (allWorkoutsLoaded) renderChart();
 }
 
-// ── DATE HELPERS ─────────────────────────────────────────────────
+// ================================================================
+//  DATE HELPERS
+// ================================================================
+
 function todayLocal() {
-    var h = new Date();
-    return new Date(h.getTime() - h.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    var d = new Date();
+    var off = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - off).toISOString().slice(0, 10);
 }
+
 function normDate(raw) {
     if (!raw) return '';
-    var s = String(raw).trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    try {
-        var d = new Date(s);
-        if (!isNaN(d.getTime())) return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-    } catch(e) {}
-    return s;
+    if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    var d = new Date(raw);
+    if (isNaN(d.getTime())) return String(raw).slice(0, 10);
+    var off = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - off).toISOString().slice(0, 10);
 }
-function fmtDate(iso) { return iso.split('-').reverse().join('/'); }
 
-// ── ADD EXERCISE ─────────────────────────────────────────────────
+function fmtDate(iso) {
+    if (!iso) return '—';
+    var p = iso.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+// ================================================================
+//  EXERCISE MANAGEMENT
+// ================================================================
+
 function addExercise() {
-    var date = document.getElementById('workoutDate').value;
-    var ex   = {
-        id:     Date.now(),
-        name:   document.getElementById('exName').value.trim(),
-        weight: document.getElementById('exWeight').value,
-        sets:   document.getElementById('exSets').value,
-        reps:   document.getElementById('exReps').value
-    };
-    if (!ex.name || !ex.weight) { showBanner('Completa nombre y peso', 'err'); return; }
+    var date   = document.getElementById('workoutDate').value || todayLocal();
+    var name   = document.getElementById('exName').value.trim();
+    var weight = document.getElementById('exWeight').value.trim();
+    var sets   = document.getElementById('exSets').value.trim();
+    var reps   = document.getElementById('exReps').value.trim();
 
-    // Update state immediately
-    var session = workouts.find(function(s) { return s.date === date; });
-    if (session) session.exercises.push(ex);
-    else workouts.push({ id: Date.now() + 1, date: date, exercises: [ex] });
+    if (!name) { showBanner('Introduce el nombre del ejercicio', 'err'); return; }
 
-    // Clear inputs and refresh UI instantly
-    ['exName','exWeight','exSets','exReps'].forEach(function(id) { document.getElementById(id).value = ''; });
-    document.getElementById('exHistoryPanel').style.display = 'none';
-    updateExerciseSelectors();
-    saveActiveUserToCache();
+    var session = null;
+    for (var i = 0; i < workouts.length; i++) {
+        if (workouts[i].date === date) { session = workouts[i]; break; }
+    }
+    if (!session) {
+        session = { id: Date.now(), date: date, exercises: [] };
+        workouts.push(session);
+    }
+    session.exercises.push({ id: Date.now(), name: name, weight: weight, sets: sets, reps: reps });
+
     markUnsaved();
-    showBanner('Ejercicio añadido ✓', 'ok');
+    updateExerciseSelectors();
+    renderExHistoryPanel(name);
+    showBanner('Ejercicio añadido \u2713', 'ok');
+
+    document.getElementById('exName').value   = '';
+    document.getElementById('exWeight').value = '';
+    document.getElementById('exSets').value   = '';
+    document.getElementById('exReps').value   = '';
 }
 
-// ── DELETE SESSION ───────────────────────────────────────────────
 function deleteSession(id) {
-    if (!confirm('¿Eliminar este día completo?')) return;
+    if (!confirm('¿Eliminar esta sesión completa?')) return;
     workouts = workouts.filter(function(s) { return s.id !== id; });
-    saveActiveUserToCache();
-    renderHistory();
     markUnsaved();
+    renderHistory();
     showBanner('Sesión eliminada', 'ok');
 }
 
-// ── DELETE EXERCISE ──────────────────────────────────────────────
 function deleteExercise(sid, eid) {
-    var s = workouts.find(function(x) { return x.id === sid; });
-    if (!s) return;
-    s.exercises = s.exercises.filter(function(e) { return e.id !== eid; });
-    if (s.exercises.length === 0) workouts = workouts.filter(function(x) { return x.id !== sid; });
-    saveActiveUserToCache();
-    renderHistory();
+    for (var i = 0; i < workouts.length; i++) {
+        if (workouts[i].id === sid) {
+            workouts[i].exercises = workouts[i].exercises.filter(function(e) { return e.id !== eid; });
+            if (workouts[i].exercises.length === 0) workouts.splice(i, 1);
+            break;
+        }
+    }
     markUnsaved();
+    renderHistory();
     showBanner('Ejercicio eliminado', 'ok');
 }
 
-// ── EDIT EXERCISE ────────────────────────────────────────────────
 function enableEdit(sid, eid, section) {
-    var row     = document.getElementById('row-' + section + '-' + eid);
-    var session = workouts.find(function(s) { return s.id === sid; });
-    var ex      = session.exercises.find(function(e) { return e.id === eid; });
-    if (section === 'hist') {
-        row.querySelector('.ex-pills').innerHTML =
-            '<input type="number" class="edit-input" id="ew-' + eid + '" value="' + ex.weight + '">' +
-            '<input type="number" class="edit-input" id="es-' + eid + '" value="' + ex.sets   + '">' +
-            '<input type="number" class="edit-input" id="er-' + eid + '" value="' + ex.reps   + '">';
-        row.querySelector('.ex-row-btns').innerHTML =
-            '<button class="btn-save" onclick="saveEdit(' + sid + ',' + eid + ',\'hist\')">OK</button>';
-    } else {
-        var c = row.cells;
-        c[1].innerHTML = '<input type="number" class="edit-input" id="ew-' + eid + '" value="' + ex.weight + '">';
-        c[2].innerHTML = '<input type="number" class="edit-input" id="es-' + eid + '" value="' + ex.sets   + '">';
-        c[3].innerHTML = '<input type="number" class="edit-input" id="er-' + eid + '" value="' + ex.reps   + '">';
-        c[4].innerHTML = '<button class="btn-save" onclick="saveEdit(' + sid + ',' + eid + ',\'prog\')">OK</button>';
+    var row = document.getElementById('row-' + section + '-' + eid);
+    if (!row) return;
+    var ex = null;
+    for (var i = 0; i < workouts.length; i++) {
+        if (workouts[i].id === sid) {
+            for (var j = 0; j < workouts[i].exercises.length; j++) {
+                if (workouts[i].exercises[j].id === eid) { ex = workouts[i].exercises[j]; break; }
+            }
+        }
     }
+    if (!ex) return;
+    row.innerHTML = '<div class="edit-inline">'
+        + '<input id="ew-' + eid + '" value="' + (ex.weight||'') + '" style="width:60px" placeholder="kg">'
+        + '<input id="es-' + eid + '" value="' + (ex.sets||'') + '" style="width:50px" placeholder="series">'
+        + '<input id="er-' + eid + '" value="' + (ex.reps||'') + '" style="width:50px" placeholder="reps">'
+        + '<button class="btn-sm btn-save-edit" onclick="saveEdit(' + sid + ',' + eid + ',\'' + section + '\')">OK</button>'
+        + '<button class="btn-sm btn-del" onclick="' + (section==='hist' ? 'renderHistory' : 'renderChart') + '()">&#x2715;</button>'
+        + '</div>';
 }
+
 function saveEdit(sid, eid, section) {
-    var session = workouts.find(function(s) { return s.id === sid; });
-    var ex      = session.exercises.find(function(e) { return e.id === eid; });
-    ex.weight = document.getElementById('ew-' + eid).value;
-    ex.sets   = document.getElementById('es-' + eid).value;
-    ex.reps   = document.getElementById('er-' + eid).value;
-    saveActiveUserToCache();
-    if (section === 'hist') renderHistory(); else renderChart();
-    markUnsaved();
-    showBanner('Cambios guardados', 'ok');
-}
-
-// ── RENDER HISTORY ───────────────────────────────────────────────
-function renderHistory() {
-    var container = document.getElementById('historyList');
-    container.innerHTML = '';
-    var sorted = workouts.slice().sort(function(a,b) { return new Date(b.date) - new Date(a.date); });
-    if (!sorted.length) {
-        container.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px 0">Sin sesiones registradas</p>';
-        return;
+    var w = document.getElementById('ew-' + eid);
+    var s = document.getElementById('es-' + eid);
+    var r = document.getElementById('er-' + eid);
+    for (var i = 0; i < workouts.length; i++) {
+        if (workouts[i].id === sid) {
+            for (var j = 0; j < workouts[i].exercises.length; j++) {
+                if (workouts[i].exercises[j].id === eid) {
+                    if (w) workouts[i].exercises[j].weight = w.value;
+                    if (s) workouts[i].exercises[j].sets   = s.value;
+                    if (r) workouts[i].exercises[j].reps   = r.value;
+                    break;
+                }
+            }
+        }
     }
-    sorted.forEach(function(s) {
-        var div = document.createElement('div');
-        div.className = 'session-card';
-        var exRows = '';
-        s.exercises.forEach(function(ex) {
-            exRows += '<div class="ex-row" id="row-hist-' + ex.id + '">'
-                    + '<div class="ex-row-name"><span class="exercise-link" onclick="goToProgress(\'' + ex.name.replace(/'/g,"\\'") + '\')">' + ex.name + '</span></div>'
-                    + '<div class="ex-pills"><span class="ex-pill">' + ex.weight + ' <em>kg</em></span><span class="ex-pill">' + ex.sets + '<em>×</em>' + ex.reps + '</span></div>'
-                    + '<div class="ex-row-btns"><button class="btn-edit" onclick="enableEdit(' + s.id + ',' + ex.id + ',\'hist\')">Editar</button>'
-                    + '<button class="btn-del-ex" onclick="deleteExercise(' + s.id + ',' + ex.id + ')">✕</button></div>'
-                    + '</div>';
-        });
-        div.innerHTML = '<div class="session-header">'
-                      + '<span class="session-header-date">' + fmtDate(s.date) + '</span>'
-                      + '<button class="btn-delete-session" onclick="deleteSession(' + s.id + ')">🗑 Eliminar</button>'
-                      + '</div><div class="ex-rows">' + exRows + '</div>';
-        container.appendChild(div);
-    });
+    markUnsaved();
+    if (section === 'hist') renderHistory(); else renderChart();
+    showBanner('Cambio guardado en memoria \u2713', 'ok');
 }
 
-// ── EXERCISE SELECTORS ───────────────────────────────────────────
-// Updates the log section datalist only (active user)
 function updateExerciseSelectors() {
-    var seen = {}, names = [];
-    workouts.forEach(function(s) { s.exercises.forEach(function(e) { if (!seen[e.name]) { seen[e.name]=true; names.push(e.name); } }); });
-    names.sort();
-    document.getElementById('exHistoryList').innerHTML = names.map(function(n) { return '<option value="' + n + '">'; }).join('');
+    var names = {};
+    workouts.forEach(function(s) { s.exercises.forEach(function(e) { names[e.name] = true; }); });
+    var sorted = Object.keys(names).sort();
+    var dl = document.getElementById('exHistoryList');
+    if (dl) dl.innerHTML = sorted.map(function(n) { return '<option value="' + n + '">'; }).join('');
 }
-// Updates the progress section select (union of selected users)
+
 function updateProgressExerciseSelector() {
-    var seen = {}, names = [];
+    var exSet = {};
     selectedProgressUsers.forEach(function(uid) {
-        var ws = (uid === getActiveUid()) ? workouts : getWorkoutsForUser(uid);
-        ws.forEach(function(s) { s.exercises.forEach(function(e) { if (!seen[e.name]) { seen[e.name]=true; names.push(e.name); } }); });
+        getWorkoutsForUser(uid).forEach(function(s) {
+            s.exercises.forEach(function(e) { exSet[e.name] = true; });
+        });
     });
-    names.sort();
-    var sel = document.getElementById('progressSelect');
+    var names = Object.keys(exSet).sort();
+    var sel   = document.getElementById('progressSelect');
+    if (!sel) return;
     var cur = sel.value;
-    sel.innerHTML = '<option value="">Selecciona ejercicio...</option>' + names.map(function(n) { return '<option value="' + n + '">' + n + '</option>'; }).join('');
-    if (cur) sel.value = cur;
-}
-
-// ── PROGRESS MULTI-USER ──────────────────────────────────────────
-var selectedProgressUsers = [];
-var USER_COLORS = ['#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2','#db2777'];
-
-function getWorkoutsForUser(uid) {
-    try { return JSON.parse(localStorage.getItem(keyW(uid))) || []; } catch(e) { return []; }
-}
-function initProgressUsers() {
-    var users = getUsers();
-    selectedProgressUsers = selectedProgressUsers.filter(function(id) {
-        return users.find(function(u) { return u.id === id; });
+    sel.innerHTML = '<option value="">— Elige ejercicio —</option>';
+    names.forEach(function(n) {
+        var o = document.createElement('option');
+        o.value = n; o.textContent = n;
+        if (n === cur) o.selected = true;
+        sel.appendChild(o);
     });
-    if (!selectedProgressUsers.length) selectedProgressUsers = [getActiveUid()];
 }
+
+// ================================================================
+//  HISTORY RENDERING
+// ================================================================
+
+function renderHistory() {
+    var el = document.getElementById('historyList');
+    if (!el) return;
+    if (!workouts.length) { el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px">Sin sesiones registradas. Añade tu primer entrenamiento.</p>'; return; }
+    var sorted = workouts.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+    el.innerHTML = sorted.map(function(s) {
+        var exRows = s.exercises.map(function(e) {
+            return '<div class="ex-row" id="row-hist-' + e.id + '">'
+                 + '<span class="ex-name" onclick="goToProgress(\'' + e.name.replace(/'/g,"\\'") + '\')">' + e.name + '</span>'
+                 + '<div class="ex-pills">'
+                 + (e.weight ? '<span class="ex-pill">' + e.weight + ' kg</span>' : '')
+                 + (e.sets && e.reps ? '<span class="ex-pill">' + e.sets + '\u00d7' + e.reps + '</span>' : '')
+                 + '</div>'
+                 + '<button class="btn-sm btn-edit" onclick="enableEdit(' + s.id + ',' + e.id + ',\'hist\')">Editar</button>'
+                 + '<button class="btn-sm btn-del"  onclick="deleteExercise(' + s.id + ',' + e.id + ')">&#x2715;</button>'
+                 + '</div>';
+        }).join('');
+        return '<div class="session-card">'
+             + '<div class="session-header">'
+             + '<span class="session-date">' + fmtDate(s.date) + '</span>'
+             + '<span class="session-count">' + s.exercises.length + ' ejercicios</span>'
+             + '<button class="btn-sm btn-del" onclick="deleteSession(' + s.id + ')">Eliminar sesión</button>'
+             + '</div>' + exRows + '</div>';
+    }).join('');
+}
+
+// ================================================================
+//  PROGRESS CHART (multi-user)
+// ================================================================
+
+// Returns workouts for any user (current context or allWorkoutsMap)
+function getWorkoutsForUser(uid) {
+    if (uid === getContextUid()) return workouts;
+    return allWorkoutsMap[uid] || [];
+}
+
+function initProgressUsers() {
+    // All users pre-selected; if not loaded yet, at least include context user
+    if (allUsers.length > 0) {
+        selectedProgressUsers = allUsers.map(function(u) { return u.id; });
+    } else {
+        var ctx = getContextUid();
+        if (ctx) selectedProgressUsers = [ctx];
+    }
+}
+
 function toggleProgressUser(uid) {
     var idx = selectedProgressUsers.indexOf(uid);
-    if (idx >= 0) {
-        if (selectedProgressUsers.length === 1) return; // at least one must stay selected
-        selectedProgressUsers.splice(idx, 1);
-    } else {
+    if (idx === -1) {
         selectedProgressUsers.push(uid);
+    } else {
+        if (selectedProgressUsers.length === 1) return; // keep at least one
+        selectedProgressUsers.splice(idx, 1);
     }
     renderProgressUserSelector();
     updateProgressExerciseSelector();
     renderChart();
 }
+
 function renderProgressUserSelector() {
-    var users = getUsers();
     var el = document.getElementById('progressUserSelector');
     if (!el) return;
-    if (users.length <= 1) { el.innerHTML = ''; return; }
-    var html = '<div style="margin-bottom:14px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;">'
-             + '<span style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;margin-right:4px;">Usuarios:</span>';
-    users.forEach(function(u, i) {
-        var active = selectedProgressUsers.indexOf(u.id) >= 0;
-        var color  = USER_COLORS[i % USER_COLORS.length];
-        html += '<button onclick="toggleProgressUser(\'' + u.id + '\')" style="'
-              + 'padding:5px 14px;border-radius:20px;border:2px solid ' + color + ';cursor:pointer;font-size:0.8rem;font-weight:600;'
-              + 'background:' + (active ? color : 'white') + ';color:' + (active ? 'white' : color) + ';transition:all 0.15s;">'
-              + u.name + '</button>';
+    if (allUsers.length <= 1) { el.innerHTML = ''; return; }
+    var html = '';
+    allUsers.forEach(function(u, idx) {
+        var sel   = selectedProgressUsers.indexOf(u.id) !== -1;
+        var color = USER_COLORS[idx % USER_COLORS.length];
+        html += '<button class="prog-user-btn" '
+              + 'style="border-color:' + color + ';'
+              + (sel ? 'background:' + color + ';color:white;' : 'background:white;color:#374151;') + '"'
+              + ' onclick="toggleProgressUser(\'' + u.id + '\')">' + u.name + '</button>';
     });
-    html += '</div>';
     el.innerHTML = html;
 }
 
-// ── PROGRESS CHART ───────────────────────────────────────────────
-var chartInstance;
 function renderChart() {
-    var name = document.getElementById('progressSelect').value;
-    var hc   = document.getElementById('exerciseSpecificHistory');
-    if (!name) { hc.innerHTML = ''; if (chartInstance) { chartInstance.destroy(); chartInstance = null; } return; }
+    var sel  = document.getElementById('progressSelect');
+    var name = sel ? sel.value : '';
+    var hist = document.getElementById('exerciseSpecificHistory');
 
-    var users = getUsers();
-    // Collect data per selected user
-    var ptsByUser = {};
-    selectedProgressUsers.forEach(function(uid) {
-        var ws  = (uid === getActiveUid()) ? workouts : getWorkoutsForUser(uid);
-        var pts = [];
-        ws.forEach(function(s) {
-            s.exercises.forEach(function(ex) {
-                if (ex.name === name) pts.push({ sid: s.id, eid: ex.id, date: s.date, w: parseFloat(ex.weight)||0, r: parseInt(ex.reps)||0, sets: ex.sets });
-            });
-        });
-        pts.sort(function(a,b) { return new Date(a.date)-new Date(b.date); });
-        ptsByUser[uid] = pts;
-    });
-
-    var isSingle  = selectedProgressUsers.length === 1;
-    var singleUid = selectedProgressUsers[0];
-    var singlePts = ptsByUser[singleUid] || [];
-
-    if (chartInstance) chartInstance.destroy();
-
-    if (isSingle) {
-        // Original single-user chart: line for kg + bars for reps
-        chartInstance = new Chart(document.getElementById('progressChart'), {
-            data: {
-                labels: singlePts.map(function(p) { return fmtDate(p.date); }),
-                datasets: [
-                    { type:'line', label:'Carga (kg)', data:singlePts.map(function(p){return p.w;}), borderColor:'#2563eb', yAxisID:'yW', tension:0.3, fill:true, backgroundColor:'rgba(37,99,235,0.1)' },
-                    { type:'bar',  label:'Reps',       data:singlePts.map(function(p){return p.r;}), backgroundColor:'rgba(245,158,11,0.3)', yAxisID:'yR', barThickness:10 }
-                ]
-            },
-            options: { responsive:true, maintainAspectRatio:false,
-                scales: {
-                    yW: { type:'linear', position:'left',  title:{display:true,text:'kg'} },
-                    yR: { type:'linear', position:'right', beginAtZero:true, grid:{drawOnChartArea:false}, title:{display:true,text:'reps'} }
-                }
-            }
-        });
-    } else {
-        // Multi-user: union of all dates, one line per user (kg only)
-        var dateSet = {};
-        selectedProgressUsers.forEach(function(uid) {
-            (ptsByUser[uid]||[]).forEach(function(p) { dateSet[p.date] = true; });
-        });
-        var allDates = Object.keys(dateSet).sort();
-        var datasets = selectedProgressUsers.map(function(uid, i) {
-            var uObj  = users.find(function(u) { return u.id === uid; }) || { name: uid };
-            var pts   = ptsByUser[uid] || [];
-            var dMap  = {};
-            // Multiple entries same date → keep max weight
-            pts.forEach(function(p) { if (dMap[p.date]===undefined || p.w > dMap[p.date]) dMap[p.date] = p.w; });
-            var color = USER_COLORS[i % USER_COLORS.length];
-            return { type:'line', label: uObj.name,
-                data: allDates.map(function(d) { return dMap[d]!==undefined ? dMap[d] : null; }),
-                borderColor:color, backgroundColor:color+'18', tension:0.3,
-                fill:false, spanGaps:true, pointRadius:4, pointBackgroundColor:color, borderWidth:2 };
-        });
-        chartInstance = new Chart(document.getElementById('progressChart'), {
-            type: 'line',
-            data: { labels: allDates.map(function(d) { return fmtDate(d); }), datasets: datasets },
-            options: { responsive:true, maintainAspectRatio:false,
-                scales: { y: { title:{display:true,text:'kg'} } },
-                plugins: { legend:{display:true} } }
-        });
-    }
-
-    // History table (with user column when comparing)
-    var allHistPts = [];
-    selectedProgressUsers.forEach(function(uid) {
-        var uObj = users.find(function(u) { return u.id === uid; }) || { name: uid };
-        (ptsByUser[uid]||[]).forEach(function(p) {
-            allHistPts.push(Object.assign({}, p, { userName: uObj.name, uid: uid }));
-        });
-    });
-    allHistPts.sort(function(a,b) { return new Date(b.date)-new Date(a.date); });
-
-    hc.innerHTML = '<h4 style="margin:20px 0 10px 0">Historial: ' + name + '</h4>'
-        + '<table class="history-table"><thead><tr>'
-        + (isSingle ? '' : '<th>Usuario</th>')
-        + '<th>Fecha</th><th>Peso</th><th>Sets</th><th>Reps</th><th>Acción</th></tr></thead><tbody>'
-        + allHistPts.map(function(l) {
-            var ci       = selectedProgressUsers.indexOf(l.uid);
-            var uc       = USER_COLORS[ci % USER_COLORS.length];
-            var canEdit  = l.uid === getActiveUid();
-            return '<tr id="row-prog-' + l.eid + '">'
-                 + (isSingle ? '' : '<td><span style="color:' + uc + ';font-weight:700;font-size:0.82rem;">' + l.userName + '</span></td>')
-                 + '<td>' + fmtDate(l.date) + '</td><td>' + l.w + ' kg</td><td>' + l.sets + '</td><td>' + l.r + '</td>'
-                 + '<td>' + (canEdit ? '<button class="btn-edit" onclick="enableEdit('+l.sid+','+l.eid+',\'prog\')">Editar</button>' : '') + '</td>'
-                 + '</tr>';
-          }).join('') + '</tbody></table>';
-}
-
-// ── EX HISTORY PANEL ─────────────────────────────────────────────
-function renderExHistoryPanel(name) {
-    var panel = document.getElementById('exHistoryPanel');
-    var rows  = document.getElementById('exHistoryRows');
-    var badge = document.getElementById('exNameBadge');
-    var t = (name || '').trim();
-    if (!t) { panel.style.display = 'none'; return; }
-    var entries = [];
-    workouts.forEach(function(s) {
-        s.exercises.forEach(function(ex) {
-            if (ex.name.toLowerCase() === t.toLowerCase()) entries.push({date:s.date,weight:ex.weight,sets:ex.sets,reps:ex.reps});
-        });
-    });
-    entries.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-    var recent = entries.slice(0,5);
-    badge.textContent = t;
-    panel.style.display = 'block';
-    if (!recent.length) { rows.innerHTML = '<div class="ex-hist-empty">Sin registros previos</div>'; return; }
-    rows.innerHTML = recent.map(function(e,i) {
-        var latest = i===0 ? '&nbsp;<span style="color:var(--primary);font-size:0.7rem;font-weight:700">&#9650; último</span>' : '';
-        return '<div class="ex-hist-row"><span class="ex-hist-date">' + fmtDate(e.date) + latest + '</span>'
-             + '<span class="ex-hist-val">' + e.weight + '&thinsp;<span>kg</span></span>'
-             + '<span class="ex-hist-val">' + (e.sets||'--') + '&thinsp;<span>x</span></span>'
-             + '<span class="ex-hist-val">' + (e.reps||'--') + '&thinsp;<span>reps</span></span></div>';
-    }).join('');
-}
-document.getElementById('exName').addEventListener('input', function() { renderExHistoryPanel(this.value); });
-
-// ── STATS ────────────────────────────────────────────────────────
-var volChartInst;
-function renderStats() {
-    var sg = document.getElementById('statsGrid');
-    if (!workouts.length) {
-        sg.innerHTML = '<p style="color:#94a3b8;font-size:0.9rem;grid-column:1/-1">Sin datos para este usuario.</p>';
-        document.getElementById('recordsList').innerHTML = '';
-        document.getElementById('topExList').innerHTML   = '';
-        if (volChartInst) { volChartInst.destroy(); volChartInst = null; }
+    if (!name || name === '— Elige ejercicio —') {
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+        if (hist) hist.innerHTML = '';
         return;
     }
-    var totalS = workouts.length;
-    var totalE = workouts.reduce(function(s,w){return s+w.exercises.length;},0);
-    var totalV = workouts.reduce(function(s,w){return s+w.exercises.reduce(function(ss,ex){return ss+(parseFloat(ex.weight)||0)*(parseInt(ex.sets)||1)*(parseInt(ex.reps)||1);},0);},0);
-    var seen2={},exNames=[];
-    workouts.forEach(function(w){w.exercises.forEach(function(e){if(!seen2[e.name]){seen2[e.name]=true;exNames.push(e.name);}});});
-    sg.innerHTML =
-        '<div class="stat-card"><div class="sc-icon">🗓️</div><div class="sc-val">'+totalS+'</div><div class="sc-lbl">Sesiones</div></div>' +
-        '<div class="stat-card"><div class="sc-icon">💪</div><div class="sc-val">'+totalE+'</div><div class="sc-lbl">Series totales</div></div>' +
-        '<div class="stat-card"><div class="sc-icon">⚖️</div><div class="sc-val">'+(totalV/1000).toFixed(1)+'t</div><div class="sc-lbl">Volumen total</div></div>' +
-        '<div class="stat-card"><div class="sc-icon">🔬</div><div class="sc-val">'+exNames.length+'</div><div class="sc-lbl">Ejercicios distintos</div></div>';
-    var recs={};
-    workouts.forEach(function(w){w.exercises.forEach(function(ex){var kg=parseFloat(ex.weight)||0;if(!recs[ex.name]||kg>recs[ex.name].kg)recs[ex.name]={kg:kg,date:w.date};});});
-    var recArr=Object.keys(recs).map(function(n){return[n,recs[n]];}).sort(function(a,b){return b[1].kg-a[1].kg;});
-    document.getElementById('recordsList').innerHTML = recArr.map(function(item){
-        return '<div class="record-item"><div><span class="record-name">'+item[0]+'</span><span class="record-date">'+fmtDate(item[1].date)+'</span></div><span class="record-kg">'+item[1].kg+' kg</span></div>';
+
+    // Build points per user
+    var ptsByUser = {};
+    var allPoints = [];
+    selectedProgressUsers.forEach(function(uid, uidx) {
+        var pts = [];
+        getWorkoutsForUser(uid).forEach(function(s) {
+            s.exercises.forEach(function(e) {
+                if (e.name === name) {
+                    pts.push({ date: s.date, weight: parseFloat(e.weight)||0, reps: parseFloat(e.reps)||0, sets: parseFloat(e.sets)||0, eid: e.id, sid: s.id, uid: uid });
+                }
+            });
+        });
+        pts.sort(function(a,b){ return a.date.localeCompare(b.date); });
+        // Keep highest weight per date
+        var byDate = {};
+        pts.forEach(function(p) { if (!byDate[p.date] || p.weight > byDate[p.date].weight) byDate[p.date] = p; });
+        ptsByUser[uid] = Object.values ? Object.values(byDate) : Object.keys(byDate).map(function(k){ return byDate[k]; });
+        ptsByUser[uid].sort(function(a,b){ return a.date.localeCompare(b.date); });
+        allPoints = allPoints.concat(ptsByUser[uid]);
+    });
+
+    var ctx = document.getElementById('progressChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+
+    var isSingle = selectedProgressUsers.length === 1;
+
+    if (isSingle) {
+        var uid  = selectedProgressUsers[0];
+        var pts  = ptsByUser[uid] || [];
+        var lbls = pts.map(function(p){ return fmtDate(p.date); });
+        chartInstance = new Chart(ctx, {
+            data: {
+                labels: lbls,
+                datasets: [
+                    { type:'line', label:'Peso (kg)', data: pts.map(function(p){ return p.weight; }), borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.08)', yAxisID:'yW', tension:0.3, pointRadius:4, fill:true },
+                    { type:'bar',  label:'Reps',      data: pts.map(function(p){ return p.reps; }),   borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,0.2)',   yAxisID:'yR' }
+                ]
+            },
+            options: { responsive:true, scales: { yW:{ type:'linear', position:'left', title:{display:true,text:'kg'} }, yR:{ type:'linear', position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'reps'} } }, plugins:{legend:{position:'top'}} }
+        });
+    } else {
+        // Multi-user: union of dates, one line per user
+        var allDates = {};
+        allPoints.forEach(function(p){ allDates[p.date]=true; });
+        var dates = Object.keys(allDates).sort();
+        var datasets = selectedProgressUsers.map(function(uid, uidx) {
+            var uName = (allUsers.find(function(u){ return u.id===uid; })||{name:uid}).name;
+            var byDate = {};
+            (ptsByUser[uid]||[]).forEach(function(p){ byDate[p.date]=p.weight; });
+            return {
+                label: uName,
+                data:  dates.map(function(d){ return byDate[d] !== undefined ? byDate[d] : null; }),
+                borderColor:       USER_COLORS[uidx % USER_COLORS.length],
+                backgroundColor:   USER_COLORS[uidx % USER_COLORS.length] + '22',
+                tension: 0.3, pointRadius: 4, spanGaps: true, fill: false
+            };
+        });
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels: dates.map(fmtDate), datasets: datasets },
+            options: { responsive:true, scales:{ y:{ title:{display:true,text:'kg'} } }, plugins:{legend:{position:'top'}} }
+        });
+    }
+
+    // History table
+    var multiUser = selectedProgressUsers.length > 1;
+    allPoints.sort(function(a,b){ return b.date.localeCompare(a.date); });
+    var tableRows = allPoints.map(function(p, i) {
+        var uName = (allUsers.find(function(u){ return u.id===p.uid; })||{name:p.uid}).name;
+        var canEdit = (p.uid === getContextUid());
+        return '<tr id="row-prog-' + p.eid + '">'
+             + '<td>' + fmtDate(p.date) + '</td>'
+             + (multiUser ? '<td>' + uName + '</td>' : '')
+             + '<td>' + (p.weight||'—') + ' kg</td>'
+             + '<td>' + (p.sets||'—') + '\u00d7' + (p.reps||'—') + '</td>'
+             + (canEdit ? '<td><button class="btn-sm btn-edit" onclick="enableEdit(' + p.sid + ',' + p.eid + ',\'prog\')">Editar</button></td>'
+                        : '<td></td>')
+             + '</tr>';
     }).join('');
-    var wVol={};
-    workouts.forEach(function(w){
-        var d=new Date(w.date),day=d.getDay()||7,mon=new Date(d);mon.setDate(d.getDate()-day+1);
-        var key=mon.toISOString().split('T')[0];
-        var vol=w.exercises.reduce(function(s,ex){return s+(parseFloat(ex.weight)||0)*(parseInt(ex.sets)||1)*(parseInt(ex.reps)||1);},0);
-        wVol[key]=(wVol[key]||0)+vol;
+
+    if (hist) hist.innerHTML = allPoints.length ? '<table class="record-table" style="margin-top:16px">'
+        + '<thead><tr><th>Fecha</th>' + (multiUser ? '<th>Usuario</th>' : '') + '<th>Peso</th><th>S\u00d7R</th><th></th></tr></thead>'
+        + '<tbody>' + tableRows + '</tbody></table>' : '';
+}
+
+// ================================================================
+//  EXERCISE HISTORY PANEL (sec-log)
+// ================================================================
+
+function renderExHistoryPanel(name) {
+    var panel = document.getElementById('exHistoryPanel');
+    var title = document.getElementById('exHistoryTitle');
+    var list  = document.getElementById('exHistoryList2');
+    if (!panel || !name) { if (panel) panel.style.display = 'none'; return; }
+
+    var entries = [];
+    workouts.forEach(function(s) {
+        s.exercises.forEach(function(e) {
+            if (e.name.toLowerCase() === name.toLowerCase()) entries.push({ date: s.date, weight: e.weight, sets: e.sets, reps: e.reps });
+        });
     });
-    var weeks=Object.keys(wVol).sort().slice(-8);
-    if (volChartInst) volChartInst.destroy();
-    volChartInst = new Chart(document.getElementById('volChart'),{
-        type:'bar',
-        data:{labels:weeks.map(function(w){return w.split('-').slice(1).reverse().join('/');}),datasets:[{label:'Volumen',data:weeks.map(function(w){return wVol[w];}),backgroundColor:'rgba(37,99,235,0.25)',borderColor:'#2563eb',borderWidth:2,borderRadius:6}]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'kg·reps'}}}}
-    });
-    var freq={};
-    workouts.forEach(function(w){w.exercises.forEach(function(ex){freq[ex.name]=(freq[ex.name]||0)+1;});});
-    var top=Object.keys(freq).map(function(n){return[n,freq[n]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
-    var maxF=top.length?top[0][1]:1;
-    document.getElementById('topExList').innerHTML = top.map(function(item){
-        return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:0.85rem;font-weight:600">'+item[0]+'</span><span style="font-size:0.78rem;color:#64748b;font-weight:700">'+item[1]+'×</span></div>'
-             + '<div style="height:7px;background:#f1f5f9;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+(item[1]/maxF*100).toFixed(0)+'%;background:var(--primary);border-radius:4px"></div></div></div>';
+    entries.sort(function(a,b){ return b.date.localeCompare(a.date); });
+    entries = entries.slice(0, 5);
+
+    if (!entries.length) { panel.style.display = 'none'; return; }
+    panel.style.display = 'block';
+    if (title) title.textContent = name;
+    if (list) list.innerHTML = entries.map(function(e, i) {
+        return '<div class="ex-hist-row' + (i===0 ? ' ex-hist-latest' : '') + '">'
+             + '<span>' + fmtDate(e.date) + '</span>'
+             + '<span>' + (e.weight||'—') + ' kg &mdash; ' + (e.sets||'—') + '\u00d7' + (e.reps||'—') + (i===0?' \u2191 último':'') + '</span>'
+             + '</div>';
     }).join('');
 }
 
-// ── MEDIDAS ──────────────────────────────────────────────────────
-var activeMedida = 'hombros';
-var medidaChartInst;
-var MLABELS = {hombros:'Hombros',pecho:'Pecho',biceps:'Bíceps',cintura:'Cintura',muslo:'Muslo',gemelo:'Gemelo'};
-var MCOLORS = {hombros:'#2563eb',pecho:'#7c3aed',biceps:'#0891b2',cintura:'#ef4444',muslo:'#16a34a',gemelo:'#d97706'};
+document.getElementById('exName').addEventListener('input', function() {
+    renderExHistoryPanel(this.value.trim());
+});
+
+// ================================================================
+//  MEDIDAS
+// ================================================================
 
 function saveMedidas() {
-    var date = document.getElementById('medidaDate').value;
-    if (!date) { showBanner('Selecciona una fecha', 'err'); return; }
-    var campos = ['hombros','pecho','biceps','cintura','muslo','gemelo'];
-    var entry  = { id: Date.now(), date: date };
-    var alguno = false;
-    campos.forEach(function(c) { var v=document.getElementById('med-'+c).value; if(v!==''){entry[c]=parseFloat(v);alguno=true;} });
-    if (!alguno) { showBanner('Introduce al menos una medida', 'err'); return; }
-    var idx = medidas.findIndex(function(m){return m.date===date;});
-    if (idx>=0) campos.forEach(function(c){if(entry[c]!==undefined)medidas[idx][c]=entry[c];});
+    var date = document.getElementById('medidaDate').value || todayLocal();
+    var keys = ['hombros','pecho','biceps','cintura','muslo','gemelo'];
+    var entry = { id: Date.now(), date: date };
+    keys.forEach(function(k) {
+        var v = parseFloat(document.getElementById('med-' + k).value);
+        if (!isNaN(v) && v > 0) entry[k] = v;
+    });
+    var existing = -1;
+    for (var i = 0; i < medidas.length; i++) { if (medidas[i].date === date) { existing = i; break; } }
+    if (existing >= 0) { medidas[existing] = Object.assign(medidas[existing], entry); }
     else medidas.push(entry);
-    campos.forEach(function(c){document.getElementById('med-'+c).value='';});
-    renderMedidasChart(activeMedida);
-    saveActiveUserToCache();
     markUnsaved();
-    showBanner('Medidas guardadas', 'ok');
+    renderMedidasChart(activeMedida);
+    showBanner('Medidas guardadas en memoria \u2713', 'ok');
+    keys.forEach(function(k) { document.getElementById('med-' + k).value = ''; });
 }
+
 function selectMedida(key, btn) {
-    document.querySelectorAll('.medida-chip').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.medida-chip').forEach(function(b){ b.classList.remove('active'); });
     btn.classList.add('active');
     activeMedida = key;
     renderMedidasChart(key);
 }
+
 function renderMedidasChart(key) {
-    var color  = MCOLORS[key]||'#2563eb', label = MLABELS[key]||key;
-    var pts    = medidas.filter(function(m){return m[key]!==undefined;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
-    var statsEl = document.getElementById('medidaStatCards');
-    if (!pts.length) {
-        statsEl.innerHTML='';
-        document.getElementById('medidaHistTable').innerHTML='<p style="text-align:center;color:#94a3b8;margin:20px 0;font-size:0.88rem;">Sin registros para '+label+'</p>';
-        if(medidaChartInst){medidaChartInst.destroy();medidaChartInst=null;}
+    var data = medidas.filter(function(m){ return m[key] !== undefined; })
+                      .sort(function(a,b){ return a.date.localeCompare(b.date); });
+    var statEl = document.getElementById('medidaStatCards');
+    var histEl = document.getElementById('medidaHistoryTable');
+
+    if (!data.length) {
+        if (statEl) statEl.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:12px">Sin datos de ' + MLABELS[key] + ' aún.</p>';
+        if (histEl) histEl.innerHTML = '';
+        if (medidaChartInst) { medidaChartInst.destroy(); medidaChartInst = null; }
         return;
     }
-    var vals=pts.map(function(p){return p[key];}), ultimo=vals[vals.length-1], primero=vals[0];
-    var cambio=(ultimo-primero).toFixed(1), cambioStr=cambio>0?'+'+cambio:''+cambio;
-    statsEl.innerHTML='<div class="medida-stat-card"><div class="stat-label">Último</div><div class="stat-value">'+ultimo+'</div><div class="stat-unit">cm</div></div>'
-        +'<div class="medida-stat-card"><div class="stat-label">Cambio total</div><div class="stat-value" style="color:'+(cambio>=0?'#16a34a':'#ef4444')+'">'+cambioStr+'</div><div class="stat-unit">cm</div></div>'
-        +'<div class="medida-stat-card"><div class="stat-label">Registros</div><div class="stat-value">'+pts.length+'</div><div class="stat-unit">entradas</div></div>';
-    if(medidaChartInst)medidaChartInst.destroy();
-    medidaChartInst=new Chart(document.getElementById('medidaChart'),{
-        type:'line',
-        data:{labels:pts.map(function(p){return fmtDate(p.date);}),datasets:[{label:label+' (cm)',data:vals,borderColor:color,backgroundColor:color+'18',tension:0.35,fill:true,pointRadius:5,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2}]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'cm',color:'#94a3b8',font:{size:11}},ticks:{font:{size:11}}},x:{ticks:{font:{size:10}}}}}
-    });
-    var sorted=[...pts].reverse();
-    document.getElementById('medidaHistTable').innerHTML='<table class="medida-hist-table" style="margin-top:20px"><thead><tr><th>Fecha</th><th>'+label+'</th><th>Variación</th></tr></thead><tbody>'
-        +sorted.map(function(p,i){
-            var prev=sorted[i+1],diff='';
-            if(prev&&prev[key]!==undefined){var d=(p[key]-prev[key]).toFixed(1);diff=d>0?'<span class="medida-diff-pos">▲ +'+d+'</span>':d<0?'<span class="medida-diff-neg">▼ '+d+'</span>':'<span class="medida-diff-neu">— 0</span>';}
-            var f=i===0;
-            return '<tr><td style="'+(f?'font-weight:700;color:var(--primary)':'')+'">'+fmtDate(p.date)+'</td><td style="'+(f?'font-weight:700;color:var(--primary)':'')+'">'+p[key]+' cm</td><td>'+diff+'</td></tr>';
-        }).join('')+'</tbody></table>';
+
+    var last    = data[data.length-1][key];
+    var first   = data[0][key];
+    var change  = last - first;
+    var changeStr = (change >= 0 ? '+' : '') + change.toFixed(1) + ' cm';
+
+    if (statEl) statEl.innerHTML = '<div class="stat-cards">'
+        + '<div class="stat-card"><div class="stat-emoji">\ud83d\udccd</div><div class="stat-val">' + last + ' cm</div><div class="stat-lbl">Último ' + MLABELS[key] + '</div></div>'
+        + '<div class="stat-card"><div class="stat-emoji">' + (change>=0?'\u2197':'\u2198') + '</div><div class="stat-val" style="color:' + (change<=0?'#16a34a':'var(--danger)') + '">' + changeStr + '</div><div class="stat-lbl">Cambio total</div></div>'
+        + '<div class="stat-card"><div class="stat-emoji">\ud83d\udcca</div><div class="stat-val">' + data.length + '</div><div class="stat-lbl">Registros</div></div>'
+        + '</div>';
+
+    var ctxEl = document.getElementById('medidaChart');
+    if (ctxEl) {
+        if (medidaChartInst) medidaChartInst.destroy();
+        medidaChartInst = new Chart(ctxEl.getContext('2d'), {
+            type:'line',
+            data: { labels: data.map(function(m){ return fmtDate(m.date); }), datasets:[{ label: MLABELS[key] + ' (cm)', data: data.map(function(m){ return m[key]; }), borderColor: MCOLORS[key], backgroundColor: MCOLORS[key]+'22', tension:0.3, pointRadius:5, pointBackgroundColor:'white', pointBorderWidth:2, fill:true }] },
+            options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ title:{display:true,text:'cm'} } } }
+        });
+    }
+
+    if (histEl) histEl.innerHTML = '<table class="record-table"><thead><tr><th>Fecha</th><th>' + MLABELS[key] + ' (cm)</th><th>Variación</th></tr></thead><tbody>'
+        + data.slice().reverse().map(function(m, i) {
+            var prev = data[data.length - 1 - i - 1];
+            var diff = prev ? ((m[key]-prev[key])>=0?'+':'') + (m[key]-prev[key]).toFixed(1) + ' cm' : '—';
+            var cls  = prev && m[key] !== prev[key] ? (m[key]>prev[key] ? 'stat-change up' : 'stat-change down') : '';
+            return '<tr><td>' + fmtDate(m.date) + '</td><td>' + m[key] + ' cm</td><td class="' + cls + '">' + diff + '</td></tr>';
+        }).join('') + '</tbody></table>';
 }
 
-// ── EXPORT ───────────────────────────────────────────────────────
-function exportData() {
-    var users = getUsers();
-    var out   = { version: 2, users: users, data: {} };
-    users.forEach(function(u) {
-        try { out.data[u.id] = { name: u.name, workouts: JSON.parse(localStorage.getItem(keyW(u.id))||'[]'), medidas: JSON.parse(localStorage.getItem(keyM(u.id))||'[]') }; }
-        catch(e) { out.data[u.id] = { name: u.name, workouts: [], medidas: [] }; }
+// ================================================================
+//  GLOBAL STATS
+// ================================================================
+
+function renderStats() {
+    var totalS = workouts.length;
+    var totalE = 0, totalV = 0;
+    var exMap = {};
+    workouts.forEach(function(s) {
+        s.exercises.forEach(function(e) {
+            totalE++;
+            var v = (parseFloat(e.weight)||0) * (parseFloat(e.sets)||0) * (parseFloat(e.reps)||0);
+            totalV += v;
+            exMap[e.name] = (exMap[e.name]||0) + 1;
+        });
     });
+    var el = document.getElementById('statsContent');
+    if (!el) return;
+    el.innerHTML = '<div class="stat-cards">'
+        + '<div class="stat-card"><div class="stat-emoji">\ud83d\uddd3</div><div class="stat-val">' + totalS + '</div><div class="stat-lbl">Sesiones</div></div>'
+        + '<div class="stat-card"><div class="stat-emoji">\ud83d\udcaa</div><div class="stat-val">' + totalE + '</div><div class="stat-lbl">Ejercicios</div></div>'
+        + '<div class="stat-card"><div class="stat-emoji">\u2696</div><div class="stat-val">' + (totalV/1000).toFixed(1) + 't</div><div class="stat-lbl">Volumen total</div></div>'
+        + '<div class="stat-card"><div class="stat-emoji">\ud83c\udfaf</div><div class="stat-val">' + Object.keys(exMap).length + '</div><div class="stat-lbl">Ejercicios únicos</div></div>'
+        + '</div>';
+
+    // Records
+    var records = {};
+    workouts.forEach(function(s){ s.exercises.forEach(function(e){ var w=parseFloat(e.weight)||0; if(!records[e.name]||w>records[e.name])records[e.name]=w; }); });
+    var recordArr = Object.keys(records).map(function(n){ return {name:n,w:records[n]}; }).sort(function(a,b){ return b.w-a.w; }).slice(0,10);
+    if (recordArr.length) {
+        el.innerHTML += '<h4 style="margin:16px 0 8px">Records personales</h4>'
+            + '<table class="record-table"><thead><tr><th>Ejercicio</th><th>M\u00e1x. kg</th></tr></thead><tbody>'
+            + recordArr.map(function(r){ return '<tr><td>' + r.name + '</td><td>' + r.w + ' kg</td></tr>'; }).join('')
+            + '</tbody></table>';
+    }
+
+    // Weekly volume
+    var weekMap = {};
+    workouts.forEach(function(s) {
+        var d = new Date(s.date + 'T00:00:00');
+        var day = d.getDay(); var diff = (day===0?-6:1) - day;
+        var monday = new Date(d.getTime() + diff*86400000);
+        var wk = monday.toISOString().slice(0,10);
+        var vol = 0;
+        s.exercises.forEach(function(e){ vol += (parseFloat(e.weight)||0)*(parseFloat(e.sets)||0)*(parseFloat(e.reps)||0); });
+        weekMap[wk] = (weekMap[wk]||0) + vol;
+    });
+    var weeks = Object.keys(weekMap).sort().slice(-8);
+    if (weeks.length && document.getElementById('volChart')) {
+        if (volChartInst) volChartInst.destroy();
+        volChartInst = new Chart(document.getElementById('volChart').getContext('2d'), {
+            type:'bar',
+            data:{ labels: weeks.map(function(w){ return 'Sem '+fmtDate(w); }), datasets:[{ label:'Volumen (kg)', data: weeks.map(function(w){ return Math.round(weekMap[w]); }), backgroundColor:'rgba(37,99,235,0.6)', borderColor:'#2563eb', borderWidth:1 }] },
+            options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{title:{display:true,text:'kg'}}} }
+        });
+    }
+}
+
+// ================================================================
+//  EXPORT / IMPORT
+// ================================================================
+
+function exportData() {
+    var out = { version: 2, exportedAt: new Date().toISOString(), contextUser: { uid: getContextUid(), workouts: workouts, medidas: medidas } };
     var a = document.createElement('a');
     a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(out, null, 2));
-    a.download = 'backup_gym.json';
+    a.download = 'backup_gym_' + getContextUid() + '.json';
     a.click();
 }
 
-// ── IMPORT ───────────────────────────────────────────────────────
-document.getElementById('importFile').addEventListener('change', async function(e) {
+document.getElementById('importFile').addEventListener('change', function(e) {
     var reader = new FileReader();
-    reader.onload = async function(ev) {
+    reader.onload = function(ev) {
         try {
             var parsed = JSON.parse(ev.target.result);
-            showBanner('Importando...', 'busy');
-
-            if (parsed.version === 2 && parsed.data) {
-                // Multi-user format v2
-                saveUsers(parsed.users || []);
-                Object.keys(parsed.data).forEach(function(uid) {
-                    var ud = parsed.data[uid];
-                    localStorage.setItem(keyW(uid), JSON.stringify(ud.workouts || []));
-                    localStorage.setItem(keyM(uid), JSON.stringify(ud.medidas  || []));
-                });
-                // Data written to localStorage only; use Save button to push to GS
+            var ws = [], ms = [];
+            if (parsed.contextUser) { ws = parsed.contextUser.workouts || []; ms = parsed.contextUser.medidas || []; }
+            else if (parsed.version === 2 && parsed.data) {
+                var uid = getContextUid();
+                if (parsed.data[uid]) { ws = parsed.data[uid].workouts || []; ms = parsed.data[uid].medidas || []; }
             } else {
-                // Legacy single-user format
-                var ws = Array.isArray(parsed) ? parsed : (parsed.workouts || []);
-                var ms = Array.isArray(parsed) ? []     : (parsed.medidas  || []);
-                ws = ws.map(function(s){return{id:s.id,date:s.date,exercises:s.exercises||[]};});
-                localStorage.setItem(keyW(getActiveUid()), JSON.stringify(ws));
-                localStorage.setItem(keyM(getActiveUid()), JSON.stringify(ms));
-                // Data written to localStorage only; use Save button to push to GS
+                ws = Array.isArray(parsed) ? parsed : (parsed.workouts || []);
+                ms = Array.isArray(parsed) ? [] : (parsed.medidas || []);
             }
-
-            // Set active user to first user in imported file
-            var importedUsers = parsed.version === 2 ? (parsed.users || []) : getUsers();
-            if (importedUsers.length > 0) {
-                setActiveUid(importedUsers[0].id);
-            }
-            // Reload active user data and refresh everything
-            loadActiveUserFromCache();
-            renderUserBadge();
-            renderUserDropdown();
-            renderUserListConfig();
+            workouts = ws.map(function(s){ return Object.assign({}, s, { date: normDate(s.date) }); });
+            medidas  = ms.map(function(m){ return Object.assign({}, m, { date: normDate(m.date) }); });
+            markUnsaved();
             refreshAllUI();
-            markUnsaved(); // imported data not yet pushed to GS
-            showBanner('Importado ✓ — pulsa Guardar para subir a Google Sheets', 'ok');
+            showBanner('Importado \u2713 — pulsa Guardar para subir a GS', 'ok');
         } catch(err) {
             showBanner('Error en importación: ' + err.message, 'err');
         }
     };
     reader.readAsText(e.target.files[0]);
-    e.target.value = ''; // allow re-import same file
+    e.target.value = '';
 });
 
-// ── UNSAVED CHANGES INDICATOR ────────────────────────────────────
-var _hasUnsaved = false;
+// ================================================================
+//  UNSAVED / BANNER / SYNC STATUS
+// ================================================================
+
 function markUnsaved() {
     _hasUnsaved = true;
     var btn = document.getElementById('btnSave');
@@ -1071,173 +1569,65 @@ function markSaved() {
     if (btn) btn.classList.remove('has-changes');
 }
 
-// ── REFRESH: load ALL users' data from GS (symmetric with gsSaveAll) ─
-var _syncToken = 0;
-async function gsRefresh() {
-    if (!SCRIPT_URL) { showBanner('Configura la URL de Google Sheets en Config', 'err'); return; }
-
-    var token = ++_syncToken;
-    var btn   = document.getElementById('btnRefresh');
-    if (btn) btn.style.opacity = '0.5';
-
-    setSyncStatus('spin', 'Cargando...');
-    showBanner('Cargando desde Google Sheets...', 'busy');
-
-    try {
-        // ── STEP 1: try to restore user list from GS ─────────────
-        // Requires GS script to support ?action=getUsers
-        // If not supported, falls back silently to local user list.
-        try {
-            var usersRes = await gsGet('getUsers', '');
-            if (token !== _syncToken) return;
-            if (usersRes.data && Array.isArray(usersRes.data) && usersRes.data.length > 0) {
-                // Merge: GS is authoritative, but keep any local-only user not in GS
-                var gsUsers    = usersRes.data;
-                var localUsers = getUsers();
-                localUsers.forEach(function(lu) {
-                    if (!gsUsers.find(function(gu) { return gu.id === lu.id; })) {
-                        gsUsers.push(lu);
-                    }
-                });
-                saveUsers(gsUsers);
-                // Ensure active UID is still valid after the merge
-                if (!gsUsers.find(function(u) { return u.id === getActiveUid(); })) {
-                    setActiveUid(gsUsers[0].id);
-                }
-            }
-        } catch(e) { /* GS script does not support getUsers — skip */ }
-
-        if (token !== _syncToken) return;
-
-        // ── STEP 2: load workouts + medidas for EVERY known user ──
-        var users  = getUsers();
-        var errors = 0;
-        for (var i = 0; i < users.length; i++) {
-            if (token !== _syncToken) return;
-            var u = users[i];
-            try {
-                var res = await Promise.all([
-                    gsGet('getWorkouts', u.id),
-                    gsGet('getMedidas',  u.id)
-                ]);
-                if (token !== _syncToken) return;
-                var freshW = (res[0].data || []).map(function(s) {
-                    return Object.assign({}, s, { date: normDate(s.date) });
-                });
-                var freshM = (res[1].data || []).map(function(m) {
-                    return Object.assign({}, m, { date: normDate(m.date) });
-                });
-                // Write to each user's own localStorage slot
-                localStorage.setItem(keyW(u.id), JSON.stringify(freshW));
-                localStorage.setItem(keyM(u.id), JSON.stringify(freshM));
-            } catch(e) { errors++; }
-        }
-
-        if (token !== _syncToken) return;
-
-        // ── STEP 3: reload active user state and refresh all UI ───
-        loadActiveUserFromCache();
-        renderUserBadge();
-        renderUserDropdown();
-        renderUserListConfig();
-        refreshAllUI();
-
-        if (errors === 0) {
-            markSaved();
-            setSyncStatus('ok', 'Actualizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
-            showBanner('Datos actualizados ✓', 'ok');
-        } else {
-            setSyncStatus('err', 'Error parcial (' + errors + ' usuario(s))');
-            showBanner('Actualizado con ' + errors + ' error(es)', 'err');
-        }
-    } catch(e) {
-        if (token !== _syncToken) return;
-        setSyncStatus('err', 'Error al conectar con Google Sheets');
-        showBanner('Sin conexión con Google Sheets', 'err');
-    } finally {
-        if (btn) btn.style.opacity = '';
-    }
+function showBanner(msg, type) {
+    var el   = document.getElementById('syncBanner');
+    var spin = document.getElementById('sbSpin');
+    var txt  = document.getElementById('sbText');
+    clearTimeout(_bannerT);
+    txt.textContent = msg;
+    el.className = 'show ' + (type || 'busy');
+    spin.style.display = (type === 'busy') ? 'block' : 'none';
+    if (type === 'ok') { _bannerT = setTimeout(function() { el.className = ''; }, 2500); }
 }
 
-// ── SAVE ALL: push ALL users' data to GS ─────────────────────────
-async function gsSaveAll() {
-    if (!SCRIPT_URL) { showBanner('Configura la URL de Google Sheets en Config', 'err'); return; }
-
-    // Flush active user's in-memory state to localStorage before reading it
-    saveActiveUserToCache();
-
-    var btn = document.getElementById('btnSave');
-    if (btn) btn.style.opacity = '0.5';
-    showBanner('Guardando en Google Sheets...', 'busy');
-    setSyncStatus('spin', 'Guardando...');
-
-    var users  = getUsers();
-    var errors = 0;
-
-    // Save the user list itself to GS (enables recovery on fresh devices / mobile)
-    // Requires GS script to support action=saveUsers. Ignored silently if not supported.
-    try { await gsPost({ action: 'saveUsers', data: users }); } catch(e) { /* optional */ }
-
-    for (var i = 0; i < users.length; i++) {
-        var u  = users[i];
-        var ws, ms;
-        try { ws = JSON.parse(localStorage.getItem(keyW(u.id)) || '[]'); } catch(e) { ws = []; }
-        try { ms = JSON.parse(localStorage.getItem(keyM(u.id)) || '[]'); } catch(e) { ms = []; }
-        try { await gsPost({ action: 'saveWorkouts', user: u.id, data: ws }); } catch(e) { errors++; }
-        try { await gsPost({ action: 'saveMedidas',  user: u.id, data: ms }); } catch(e) { errors++; }
-    }
-
-    if (btn) btn.style.opacity = '';
-    if (errors === 0) {
-        markSaved();
-        setSyncStatus('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
-        showBanner('Guardado en Google Sheets ✓', 'ok');
-    } else {
-        setSyncStatus('err', 'Error al guardar');
-        showBanner('Error al guardar (' + errors + ' fallos)', 'err');
-    }
+function setSyncStatus(state, text) {
+    var dot = document.getElementById('syncDot');
+    var lbl = document.getElementById('syncStatus');
+    if (dot) dot.className = 'sync-dot ' + (state || '');
+    if (lbl) lbl.textContent = text;
 }
 
-// ── BOOT ─────────────────────────────────────────────────────────
-(function init() {
-    // Set today's date on inputs
-    var today = todayLocal();
-    document.getElementById('workoutDate').value = today;
-    document.getElementById('medidaDate').value  = today;
+// ================================================================
+//  REFRESH ALL UI
+// ================================================================
 
-    // If no users exist yet, create a default one
-    if (!getUsers().length) {
-        saveUsers([{ id: 'u_default', name: 'Usuario' }]);
-        setActiveUid('u_default');
-    }
-
-    // Init progress user selection
-    selectedProgressUsers = [getActiveUid()];
-
-    // Ensure active UID is valid
-    var users = getUsers();
-    if (!users.find(function(u){return u.id===getActiveUid();})) {
-        setActiveUid(users[0].id);
-    }
-
-    // Load active user data from cache
-    loadActiveUserFromCache();
-
-    // Render user UI
-    renderUserBadge();
-    renderUserDropdown();
-    renderUserListConfig();
-
-    // Render default section
+function refreshAllUI() {
     updateExerciseSelectors();
+    renderExHistoryPanel('');
+    var active = document.querySelector('main section:not(.hidden)');
+    if (active) triggerSectionRender(active.id.replace('sec-', ''));
+}
 
-    // Populate scriptUrl field
-    document.getElementById('scriptUrlInput').value = SCRIPT_URL;
-    if (SCRIPT_URL) setSyncStatus('ok', 'URL configurada');
-    else setSyncStatus('err', 'Sin URL — ve a Config');
+// ================================================================
+//  INIT
+// ================================================================
 
-    // No auto-sync on boot: user presses Refresh manually
+(function init() {
+    // Try to restore session from sessionStorage
+    var stored = sessionStorage.getItem(SESSION_KEY);
+    if (stored) {
+        try {
+            var s = JSON.parse(stored);
+            if (s && s.role && s.name) {
+                SESSION_ROLE = s.role;
+                SESSION_UID  = s.uid  || '';
+                SESSION_NAME = s.name;
+                // Show app immediately, data will load from GS
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appNav').classList.remove('hidden');
+                document.getElementById('appMain').classList.remove('hidden');
+                document.getElementById('userBadge').classList.remove('hidden');
+                renderUserBadge();
+                postLoginInit();
+                return;
+            }
+        } catch(e) { /* invalid session */ }
+    }
+
+    // No session → show login
+    initLoginScreen();
 })();
+
 </script>
 </body>
 </html>
