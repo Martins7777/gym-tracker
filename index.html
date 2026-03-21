@@ -15,9 +15,9 @@
         nav h2 { color: var(--primary); margin: 0; font-size: 1.1rem; white-space: nowrap; }
         .nav-links { display: flex; gap: 5px; width: 100%; justify-content: center; flex-wrap: wrap; }
         nav button { padding: 8px 12px; border: none; background: #334155; color: white; cursor: pointer; border-radius: 6px; font-size: 0.8rem; flex: 1; min-width: 80px; }
-        @media (min-width: 600px) { nav { flex-direction: row; padding: 10px 20px; } nav h2 { font-size: 1.2rem; } nav button { font-size: 0.9rem; flex: none; } main { margin-top: 80px !important; } .grid-inputs { grid-template-columns: 2fr 1fr 1fr 1fr !important; } }
+        @media (min-width: 600px) { nav { flex-direction: row; padding: 10px 155px 10px 20px; } nav h2 { font-size: 1.2rem; } nav button { font-size: 0.9rem; flex: none; } .nav-links { width: auto; flex: 1; } main { margin-top: 80px !important; } .grid-inputs { grid-template-columns: 2fr 1fr 1fr 1fr !important; } }
 
-        main { margin-top: 110px; padding: 15px; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+        main { margin-top: 148px; padding: 15px; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; box-sizing: border-box; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .grid-inputs { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 15px; }
         label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; color: #64748b; }
@@ -149,31 +149,19 @@
         .btn-del-user { border: none; background: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 6px; }
 
         /* ── GS ACTION BUTTONS ── */
-        #gsButtons { position: fixed; top: 9px; right: 148px; display: flex; gap: 6px; z-index: 1100; }
-        .gs-btn { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.1); color: white; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+        #gsButtons { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+        .gs-btn { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.1); color: white; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap; flex: none; min-width: 0; }
         .gs-btn:hover { background: rgba(255,255,255,0.22); }
         .gs-btn.has-changes { border-color: #f59e0b; background: rgba(245,158,11,0.2); }
         .gs-btn.has-changes:hover { background: rgba(245,158,11,0.35); }
         .gs-btn svg { flex-shrink: 0; }
-        @media (max-width: 599px) { #gsButtons { right: 130px; } #gsButtons .gs-btn span { display: none; } }
+        @media (max-width: 599px) { #gsButtons { justify-content: center; } #gsButtons .gs-btn span { display: none; } }
     </style>
 </head>
 <body>
 
 <!-- Sync banner (non-blocking) -->
 <div id="syncBanner"><div class="sb-spin" id="sbSpin" style="display:none"></div><span id="sbText"></span></div>
-
-<!-- GS action buttons -->
-<div id="gsButtons">
-    <button class="gs-btn" id="btnRefresh" onclick="gsRefresh()" title="Cargar datos desde Google Sheets">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        <span>Refresh</span>
-    </button>
-    <button class="gs-btn" id="btnSave" onclick="gsSaveAll()" title="Guardar todos los datos en Google Sheets">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        <span>Guardar</span>
-    </button>
-</div>
 
 <!-- User badge + dropdown -->
 <div id="userBadge" onclick="toggleUserDropdown()">
@@ -196,6 +184,16 @@
         <button onclick="showSection('medidas')">Medidas</button>
         <button onclick="showSection('stats')">Estadísticas</button>
         <button onclick="showSection('log')">+Registro</button>
+    </div>
+    <div id="gsButtons">
+        <button class="gs-btn" id="btnRefresh" onclick="gsRefresh()" title="Cargar datos desde Google Sheets">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+            <span>Refresh</span>
+        </button>
+        <button class="gs-btn" id="btnSave" onclick="gsSaveAll()" title="Guardar todos los datos en Google Sheets">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Guardar</span>
+        </button>
     </div>
 </nav>
 
@@ -235,6 +233,7 @@
     <!-- PROGRESO -->
     <section id="sec-progress" class="card hidden">
         <h3>Progreso</h3>
+        <div id="progressUserSelector"></div>
         <select id="progressSelect" onchange="renderChart()" style="margin-bottom:20px;"></select>
         <div style="position:relative;height:300px;width:100%;"><canvas id="progressChart"></canvas></div>
         <div id="exerciseSpecificHistory"></div>
@@ -439,6 +438,7 @@ function switchUser(id) {
     _syncToken++;
 
     setActiveUid(id);
+    selectedProgressUsers = [id];  // reset comparison to the new active user
     loadActiveUserFromCache();   // load new user data synchronously — no async
     closeDropdown();
     renderUserBadge();
@@ -459,7 +459,7 @@ function refreshAllUI() {
 
 function triggerSectionRender(id) {
     if (id === 'history')  { renderHistory(); }
-    if (id === 'progress') { updateExerciseSelectors(); renderChart(); }
+    if (id === 'progress') { initProgressUsers(); renderProgressUserSelector(); updateProgressExerciseSelector(); renderChart(); }
     if (id === 'medidas')  { renderMedidasChart(activeMedida); }
     if (id === 'stats')    { renderStats(); }
     if (id === 'log')      { updateExerciseSelectors(); }
@@ -688,15 +688,70 @@ function renderHistory() {
 }
 
 // ── EXERCISE SELECTORS ───────────────────────────────────────────
+// Updates the log section datalist only (active user)
 function updateExerciseSelectors() {
     var seen = {}, names = [];
     workouts.forEach(function(s) { s.exercises.forEach(function(e) { if (!seen[e.name]) { seen[e.name]=true; names.push(e.name); } }); });
     names.sort();
     document.getElementById('exHistoryList').innerHTML = names.map(function(n) { return '<option value="' + n + '">'; }).join('');
+}
+// Updates the progress section select (union of selected users)
+function updateProgressExerciseSelector() {
+    var seen = {}, names = [];
+    selectedProgressUsers.forEach(function(uid) {
+        var ws = (uid === getActiveUid()) ? workouts : getWorkoutsForUser(uid);
+        ws.forEach(function(s) { s.exercises.forEach(function(e) { if (!seen[e.name]) { seen[e.name]=true; names.push(e.name); } }); });
+    });
+    names.sort();
     var sel = document.getElementById('progressSelect');
     var cur = sel.value;
     sel.innerHTML = '<option value="">Selecciona ejercicio...</option>' + names.map(function(n) { return '<option value="' + n + '">' + n + '</option>'; }).join('');
     if (cur) sel.value = cur;
+}
+
+// ── PROGRESS MULTI-USER ──────────────────────────────────────────
+var selectedProgressUsers = [];
+var USER_COLORS = ['#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2','#db2777'];
+
+function getWorkoutsForUser(uid) {
+    try { return JSON.parse(localStorage.getItem(keyW(uid))) || []; } catch(e) { return []; }
+}
+function initProgressUsers() {
+    var users = getUsers();
+    selectedProgressUsers = selectedProgressUsers.filter(function(id) {
+        return users.find(function(u) { return u.id === id; });
+    });
+    if (!selectedProgressUsers.length) selectedProgressUsers = [getActiveUid()];
+}
+function toggleProgressUser(uid) {
+    var idx = selectedProgressUsers.indexOf(uid);
+    if (idx >= 0) {
+        if (selectedProgressUsers.length === 1) return; // at least one must stay selected
+        selectedProgressUsers.splice(idx, 1);
+    } else {
+        selectedProgressUsers.push(uid);
+    }
+    renderProgressUserSelector();
+    updateProgressExerciseSelector();
+    renderChart();
+}
+function renderProgressUserSelector() {
+    var users = getUsers();
+    var el = document.getElementById('progressUserSelector');
+    if (!el) return;
+    if (users.length <= 1) { el.innerHTML = ''; return; }
+    var html = '<div style="margin-bottom:14px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;">'
+             + '<span style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;margin-right:4px;">Usuarios:</span>';
+    users.forEach(function(u, i) {
+        var active = selectedProgressUsers.indexOf(u.id) >= 0;
+        var color  = USER_COLORS[i % USER_COLORS.length];
+        html += '<button onclick="toggleProgressUser(\'' + u.id + '\')" style="'
+              + 'padding:5px 14px;border-radius:20px;border:2px solid ' + color + ';cursor:pointer;font-size:0.8rem;font-weight:600;'
+              + 'background:' + (active ? color : 'white') + ';color:' + (active ? 'white' : color) + ';transition:all 0.15s;">'
+              + u.name + '</button>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
 }
 
 // ── PROGRESS CHART ───────────────────────────────────────────────
@@ -704,36 +759,97 @@ var chartInstance;
 function renderChart() {
     var name = document.getElementById('progressSelect').value;
     var hc   = document.getElementById('exerciseSpecificHistory');
-    if (!name) { hc.innerHTML = ''; return; }
-    var pts = [];
-    workouts.forEach(function(s) {
-        s.exercises.forEach(function(ex) {
-            if (ex.name === name) pts.push({ sid: s.id, eid: ex.id, date: s.date, w: parseFloat(ex.weight)||0, r: parseInt(ex.reps)||0, sets: ex.sets });
+    if (!name) { hc.innerHTML = ''; if (chartInstance) { chartInstance.destroy(); chartInstance = null; } return; }
+
+    var users = getUsers();
+    // Collect data per selected user
+    var ptsByUser = {};
+    selectedProgressUsers.forEach(function(uid) {
+        var ws  = (uid === getActiveUid()) ? workouts : getWorkoutsForUser(uid);
+        var pts = [];
+        ws.forEach(function(s) {
+            s.exercises.forEach(function(ex) {
+                if (ex.name === name) pts.push({ sid: s.id, eid: ex.id, date: s.date, w: parseFloat(ex.weight)||0, r: parseInt(ex.reps)||0, sets: ex.sets });
+            });
+        });
+        pts.sort(function(a,b) { return new Date(a.date)-new Date(b.date); });
+        ptsByUser[uid] = pts;
+    });
+
+    var isSingle  = selectedProgressUsers.length === 1;
+    var singleUid = selectedProgressUsers[0];
+    var singlePts = ptsByUser[singleUid] || [];
+
+    if (chartInstance) chartInstance.destroy();
+
+    if (isSingle) {
+        // Original single-user chart: line for kg + bars for reps
+        chartInstance = new Chart(document.getElementById('progressChart'), {
+            data: {
+                labels: singlePts.map(function(p) { return fmtDate(p.date); }),
+                datasets: [
+                    { type:'line', label:'Carga (kg)', data:singlePts.map(function(p){return p.w;}), borderColor:'#2563eb', yAxisID:'yW', tension:0.3, fill:true, backgroundColor:'rgba(37,99,235,0.1)' },
+                    { type:'bar',  label:'Reps',       data:singlePts.map(function(p){return p.r;}), backgroundColor:'rgba(245,158,11,0.3)', yAxisID:'yR', barThickness:10 }
+                ]
+            },
+            options: { responsive:true, maintainAspectRatio:false,
+                scales: {
+                    yW: { type:'linear', position:'left',  title:{display:true,text:'kg'} },
+                    yR: { type:'linear', position:'right', beginAtZero:true, grid:{drawOnChartArea:false}, title:{display:true,text:'reps'} }
+                }
+            }
+        });
+    } else {
+        // Multi-user: union of all dates, one line per user (kg only)
+        var dateSet = {};
+        selectedProgressUsers.forEach(function(uid) {
+            (ptsByUser[uid]||[]).forEach(function(p) { dateSet[p.date] = true; });
+        });
+        var allDates = Object.keys(dateSet).sort();
+        var datasets = selectedProgressUsers.map(function(uid, i) {
+            var uObj  = users.find(function(u) { return u.id === uid; }) || { name: uid };
+            var pts   = ptsByUser[uid] || [];
+            var dMap  = {};
+            // Multiple entries same date → keep max weight
+            pts.forEach(function(p) { if (dMap[p.date]===undefined || p.w > dMap[p.date]) dMap[p.date] = p.w; });
+            var color = USER_COLORS[i % USER_COLORS.length];
+            return { type:'line', label: uObj.name,
+                data: allDates.map(function(d) { return dMap[d]!==undefined ? dMap[d] : null; }),
+                borderColor:color, backgroundColor:color+'18', tension:0.3,
+                fill:false, spanGaps:true, pointRadius:4, pointBackgroundColor:color, borderWidth:2 };
+        });
+        chartInstance = new Chart(document.getElementById('progressChart'), {
+            type: 'line',
+            data: { labels: allDates.map(function(d) { return fmtDate(d); }), datasets: datasets },
+            options: { responsive:true, maintainAspectRatio:false,
+                scales: { y: { title:{display:true,text:'kg'} } },
+                plugins: { legend:{display:true} } }
+        });
+    }
+
+    // History table (with user column when comparing)
+    var allHistPts = [];
+    selectedProgressUsers.forEach(function(uid) {
+        var uObj = users.find(function(u) { return u.id === uid; }) || { name: uid };
+        (ptsByUser[uid]||[]).forEach(function(p) {
+            allHistPts.push(Object.assign({}, p, { userName: uObj.name, uid: uid }));
         });
     });
-    pts.sort(function(a,b) { return new Date(a.date)-new Date(b.date); });
-    if (chartInstance) chartInstance.destroy();
-    chartInstance = new Chart(document.getElementById('progressChart'), {
-        data: {
-            labels: pts.map(function(p) { return fmtDate(p.date); }),
-            datasets: [
-                { type:'line', label:'Carga (kg)', data:pts.map(function(p){return p.w;}), borderColor:'#2563eb', yAxisID:'yW', tension:0.3, fill:true, backgroundColor:'rgba(37,99,235,0.1)' },
-                { type:'bar',  label:'Reps',       data:pts.map(function(p){return p.r;}), backgroundColor:'rgba(245,158,11,0.3)', yAxisID:'yR', barThickness:10 }
-            ]
-        },
-        options: { responsive:true, maintainAspectRatio:false,
-            scales: {
-                yW: { type:'linear', position:'left',  title:{display:true,text:'kg'} },
-                yR: { type:'linear', position:'right', beginAtZero:true, grid:{drawOnChartArea:false}, title:{display:true,text:'reps'} }
-            }
-        }
-    });
-    var ls = pts.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+    allHistPts.sort(function(a,b) { return new Date(b.date)-new Date(a.date); });
+
     hc.innerHTML = '<h4 style="margin:20px 0 10px 0">Historial: ' + name + '</h4>'
-        + '<table class="history-table"><thead><tr><th>Fecha</th><th>Peso</th><th>Sets</th><th>Reps</th><th>Acción</th></tr></thead><tbody>'
-        + ls.map(function(l) {
-            return '<tr id="row-prog-' + l.eid + '"><td>' + fmtDate(l.date) + '</td><td>' + l.w + ' kg</td><td>' + l.sets + '</td><td>' + l.r + '</td>'
-                 + '<td><button class="btn-edit" onclick="enableEdit(' + l.sid + ',' + l.eid + ',\'prog\')">Editar</button></td></tr>';
+        + '<table class="history-table"><thead><tr>'
+        + (isSingle ? '' : '<th>Usuario</th>')
+        + '<th>Fecha</th><th>Peso</th><th>Sets</th><th>Reps</th><th>Acción</th></tr></thead><tbody>'
+        + allHistPts.map(function(l) {
+            var ci       = selectedProgressUsers.indexOf(l.uid);
+            var uc       = USER_COLORS[ci % USER_COLORS.length];
+            var canEdit  = l.uid === getActiveUid();
+            return '<tr id="row-prog-' + l.eid + '">'
+                 + (isSingle ? '' : '<td><span style="color:' + uc + ';font-weight:700;font-size:0.82rem;">' + l.userName + '</span></td>')
+                 + '<td>' + fmtDate(l.date) + '</td><td>' + l.w + ' kg</td><td>' + l.sets + '</td><td>' + l.r + '</td>'
+                 + '<td>' + (canEdit ? '<button class="btn-edit" onclick="enableEdit('+l.sid+','+l.eid+',\'prog\')">Editar</button>' : '') + '</td>'
+                 + '</tr>';
           }).join('') + '</tbody></table>';
 }
 
@@ -1040,6 +1156,9 @@ async function gsSaveAll() {
         saveUsers([{ id: 'u_default', name: 'Usuario' }]);
         setActiveUid('u_default');
     }
+
+    // Init progress user selection
+    selectedProgressUsers = [getActiveUid()];
 
     // Ensure active UID is valid
     var users = getUsers();
