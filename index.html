@@ -375,7 +375,11 @@ function fetchT(url, opts, ms) {
 }
 async function gsGet(action, uid) {
     if (!SCRIPT_URL) throw new Error('Sin URL');
-    var r = await fetchT(SCRIPT_URL + '?action=' + action + '&user=' + uid);
+    // _t= prevents stale cached responses from proxies / GS CDN
+    var url = SCRIPT_URL + '?action=' + encodeURIComponent(action)
+            + '&user=' + encodeURIComponent(uid)
+            + '&_t=' + Date.now();
+    var r = await fetchT(url);
     var d = JSON.parse(await r.text());
     if (d.error) throw new Error(d.error);
     return d;
@@ -1067,55 +1071,100 @@ function markSaved() {
     if (btn) btn.classList.remove('has-changes');
 }
 
-// ── REFRESH: load active user data from GS ────────────────────────
+// ── REFRESH: load ALL users' data from GS (symmetric with gsSaveAll) ─
 var _syncToken = 0;
 async function gsRefresh() {
     if (!SCRIPT_URL) { showBanner('Configura la URL de Google Sheets en Config', 'err'); return; }
 
-    var uid   = getActiveUid();          // snapshot of user at call time
-    var token = ++_syncToken;            // unique token for this request
+    var token = ++_syncToken;
     var btn   = document.getElementById('btnRefresh');
     if (btn) btn.style.opacity = '0.5';
 
     setSyncStatus('spin', 'Cargando...');
     showBanner('Cargando desde Google Sheets...', 'busy');
+
     try {
-        var res = await Promise.all([gsGet('getWorkouts', uid), gsGet('getMedidas', uid)]);
+        // ── STEP 1: try to restore user list from GS ─────────────
+        // Requires GS script to support ?action=getUsers
+        // If not supported, falls back silently to local user list.
+        try {
+            var usersRes = await gsGet('getUsers', '');
+            if (token !== _syncToken) return;
+            if (usersRes.data && Array.isArray(usersRes.data) && usersRes.data.length > 0) {
+                // Merge: GS is authoritative, but keep any local-only user not in GS
+                var gsUsers    = usersRes.data;
+                var localUsers = getUsers();
+                localUsers.forEach(function(lu) {
+                    if (!gsUsers.find(function(gu) { return gu.id === lu.id; })) {
+                        gsUsers.push(lu);
+                    }
+                });
+                saveUsers(gsUsers);
+                // Ensure active UID is still valid after the merge
+                if (!gsUsers.find(function(u) { return u.id === getActiveUid(); })) {
+                    setActiveUid(gsUsers[0].id);
+                }
+            }
+        } catch(e) { /* GS script does not support getUsers — skip */ }
 
-        // ── GUARD: discard stale response if user changed ──────────
-        if (token !== _syncToken)   return; // a newer Refresh was triggered
-        if (uid !== getActiveUid()) return; // user changed while waiting
+        if (token !== _syncToken) return;
 
-        // Safe to write — we are still on the same user
-        var freshW = (res[0].data || []).map(function(s){ return Object.assign({}, s, {date: normDate(s.date)}); });
-        var freshM = (res[1].data || []).map(function(m){ return Object.assign({}, m, {date: normDate(m.date)}); });
+        // ── STEP 2: load workouts + medidas for EVERY known user ──
+        var users  = getUsers();
+        var errors = 0;
+        for (var i = 0; i < users.length; i++) {
+            if (token !== _syncToken) return;
+            var u = users[i];
+            try {
+                var res = await Promise.all([
+                    gsGet('getWorkouts', u.id),
+                    gsGet('getMedidas',  u.id)
+                ]);
+                if (token !== _syncToken) return;
+                var freshW = (res[0].data || []).map(function(s) {
+                    return Object.assign({}, s, { date: normDate(s.date) });
+                });
+                var freshM = (res[1].data || []).map(function(m) {
+                    return Object.assign({}, m, { date: normDate(m.date) });
+                });
+                // Write to each user's own localStorage slot
+                localStorage.setItem(keyW(u.id), JSON.stringify(freshW));
+                localStorage.setItem(keyM(u.id), JSON.stringify(freshM));
+            } catch(e) { errors++; }
+        }
 
-        // Write to the specific user's localStorage key (not the active one, to be explicit)
-        localStorage.setItem(keyW(uid), JSON.stringify(freshW));
-        localStorage.setItem(keyM(uid), JSON.stringify(freshM));
+        if (token !== _syncToken) return;
 
-        // Update global state only if still active
-        workouts = freshW;
-        medidas  = freshM;
+        // ── STEP 3: reload active user state and refresh all UI ───
+        loadActiveUserFromCache();
+        renderUserBadge();
+        renderUserDropdown();
+        renderUserListConfig();
+        refreshAllUI();
 
-        markSaved();
-        updateExerciseSelectors();
-        var active = document.querySelector('main section:not(.hidden)');
-        if (active) triggerSectionRender(active.id.replace('sec-', ''));
-        setSyncStatus('ok', 'Actualizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
-        showBanner('Datos actualizados ✓', 'ok');
+        if (errors === 0) {
+            markSaved();
+            setSyncStatus('ok', 'Actualizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
+            showBanner('Datos actualizados ✓', 'ok');
+        } else {
+            setSyncStatus('err', 'Error parcial (' + errors + ' usuario(s))');
+            showBanner('Actualizado con ' + errors + ' error(es)', 'err');
+        }
     } catch(e) {
-        if (token !== _syncToken) return; // stale error, ignore silently
+        if (token !== _syncToken) return;
         setSyncStatus('err', 'Error al conectar con Google Sheets');
         showBanner('Sin conexión con Google Sheets', 'err');
     } finally {
-        if (btn) btn.style.opacity = ''; // always restore button
+        if (btn) btn.style.opacity = '';
     }
 }
 
 // ── SAVE ALL: push ALL users' data to GS ─────────────────────────
 async function gsSaveAll() {
     if (!SCRIPT_URL) { showBanner('Configura la URL de Google Sheets en Config', 'err'); return; }
+
+    // Flush active user's in-memory state to localStorage before reading it
+    saveActiveUserToCache();
 
     var btn = document.getElementById('btnSave');
     if (btn) btn.style.opacity = '0.5';
@@ -1124,6 +1173,11 @@ async function gsSaveAll() {
 
     var users  = getUsers();
     var errors = 0;
+
+    // Save the user list itself to GS (enables recovery on fresh devices / mobile)
+    // Requires GS script to support action=saveUsers. Ignored silently if not supported.
+    try { await gsPost({ action: 'saveUsers', data: users }); } catch(e) { /* optional */ }
+
     for (var i = 0; i < users.length; i++) {
         var u  = users[i];
         var ws, ms;
