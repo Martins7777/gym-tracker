@@ -147,12 +147,33 @@
         .user-config-name { flex: 1; font-size: 0.88rem; font-weight: 500; color: #1e293b; }
         .user-config-name.is-active { font-weight: 700; color: var(--primary); }
         .btn-del-user { border: none; background: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 6px; }
+
+        /* ── GS ACTION BUTTONS ── */
+        #gsButtons { position: fixed; top: 9px; right: 148px; display: flex; gap: 6px; z-index: 1100; }
+        .gs-btn { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.1); color: white; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+        .gs-btn:hover { background: rgba(255,255,255,0.22); }
+        .gs-btn.has-changes { border-color: #f59e0b; background: rgba(245,158,11,0.2); }
+        .gs-btn.has-changes:hover { background: rgba(245,158,11,0.35); }
+        .gs-btn svg { flex-shrink: 0; }
+        @media (max-width: 599px) { #gsButtons { right: 130px; } #gsButtons .gs-btn span { display: none; } }
     </style>
 </head>
 <body>
 
 <!-- Sync banner (non-blocking) -->
 <div id="syncBanner"><div class="sb-spin" id="sbSpin" style="display:none"></div><span id="sbText"></span></div>
+
+<!-- GS action buttons -->
+<div id="gsButtons">
+    <button class="gs-btn" id="btnRefresh" onclick="gsRefresh()" title="Cargar datos desde Google Sheets">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+        <span>Refresh</span>
+    </button>
+    <button class="gs-btn" id="btnSave" onclick="gsSaveAll()" title="Guardar todos los datos en Google Sheets">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Guardar</span>
+    </button>
+</div>
 
 <!-- User badge + dropdown -->
 <div id="userBadge" onclick="toggleUserDropdown()">
@@ -322,8 +343,7 @@ function saveScriptUrl() {
     if (!v.startsWith('https://script.google.com')) { showBanner('URL no válida', 'err'); return; }
     SCRIPT_URL = v;
     localStorage.setItem(GS_URL_KEY, v);
-    showBanner('URL guardada ✓', 'ok');
-    syncFromGS();
+    showBanner('URL guardada ✓ — pulsa Refresh para cargar datos', 'ok');
 }
 
 function setSyncStatus(state, text) {
@@ -425,8 +445,7 @@ function switchUser(id) {
     renderUserDropdown();
     renderUserListConfig();
     refreshAllUI();              // re-render everything with new user's data
-
-    syncFromGS();                // then sync from GS in background
+    // No auto-sync: user presses Refresh manually
 }
 
 // Refresh ALL sections with current workouts/medidas
@@ -560,7 +579,7 @@ function normDate(raw) {
 function fmtDate(iso) { return iso.split('-').reverse().join('/'); }
 
 // ── ADD EXERCISE ─────────────────────────────────────────────────
-async function addExercise() {
+function addExercise() {
     var date = document.getElementById('workoutDate').value;
     var ex   = {
         id:     Date.now(),
@@ -581,42 +600,30 @@ async function addExercise() {
     document.getElementById('exHistoryPanel').style.display = 'none';
     updateExerciseSelectors();
     saveActiveUserToCache();
-    showBanner('Guardando...', 'busy');
-
-    // Sync GS in background
-    try {
-        await gsPost({ action: 'saveWorkouts', user: getActiveUid(), data: workouts });
-        setSyncStatus('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
-        showBanner('Guardado ✓', 'ok');
-    } catch(e) { showBanner('Error al guardar en GS', 'err'); }
+    markUnsaved();
+    showBanner('Ejercicio añadido ✓', 'ok');
 }
 
 // ── DELETE SESSION ───────────────────────────────────────────────
-async function deleteSession(id) {
+function deleteSession(id) {
     if (!confirm('¿Eliminar este día completo?')) return;
     workouts = workouts.filter(function(s) { return s.id !== id; });
     saveActiveUserToCache();
     renderHistory();
-    showBanner('Eliminando...', 'busy');
-    try {
-        await gsPost({ action: 'deleteSession', user: getActiveUid(), sessionId: id });
-        showBanner('Eliminado ✓', 'ok');
-    } catch(e) { showBanner('Error al eliminar', 'err'); }
+    markUnsaved();
+    showBanner('Sesión eliminada', 'ok');
 }
 
 // ── DELETE EXERCISE ──────────────────────────────────────────────
-async function deleteExercise(sid, eid) {
+function deleteExercise(sid, eid) {
     var s = workouts.find(function(x) { return x.id === sid; });
     if (!s) return;
     s.exercises = s.exercises.filter(function(e) { return e.id !== eid; });
     if (s.exercises.length === 0) workouts = workouts.filter(function(x) { return x.id !== sid; });
     saveActiveUserToCache();
     renderHistory();
-    showBanner('Eliminando...', 'busy');
-    try {
-        await gsPost({ action: 'deleteExercise', user: getActiveUid(), sessionId: sid, exId: eid });
-        showBanner('Eliminado ✓', 'ok');
-    } catch(e) { showBanner('Error al eliminar', 'err'); }
+    markUnsaved();
+    showBanner('Ejercicio eliminado', 'ok');
 }
 
 // ── EDIT EXERCISE ────────────────────────────────────────────────
@@ -639,7 +646,7 @@ function enableEdit(sid, eid, section) {
         c[4].innerHTML = '<button class="btn-save" onclick="saveEdit(' + sid + ',' + eid + ',\'prog\')">OK</button>';
     }
 }
-async function saveEdit(sid, eid, section) {
+function saveEdit(sid, eid, section) {
     var session = workouts.find(function(s) { return s.id === sid; });
     var ex      = session.exercises.find(function(e) { return e.id === eid; });
     ex.weight = document.getElementById('ew-' + eid).value;
@@ -647,11 +654,8 @@ async function saveEdit(sid, eid, section) {
     ex.reps   = document.getElementById('er-' + eid).value;
     saveActiveUserToCache();
     if (section === 'hist') renderHistory(); else renderChart();
-    showBanner('Guardando...', 'busy');
-    try {
-        await gsPost({ action: 'updateExercise', user: getActiveUid(), sessionId: sid, exId: eid, weight: ex.weight, sets: ex.sets, reps: ex.reps });
-        showBanner('Guardado ✓', 'ok');
-    } catch(e) { showBanner('Error al guardar', 'err'); }
+    markUnsaved();
+    showBanner('Cambios guardados', 'ok');
 }
 
 // ── RENDER HISTORY ───────────────────────────────────────────────
@@ -818,7 +822,7 @@ var medidaChartInst;
 var MLABELS = {hombros:'Hombros',pecho:'Pecho',biceps:'Bíceps',cintura:'Cintura',muslo:'Muslo',gemelo:'Gemelo'};
 var MCOLORS = {hombros:'#2563eb',pecho:'#7c3aed',biceps:'#0891b2',cintura:'#ef4444',muslo:'#16a34a',gemelo:'#d97706'};
 
-async function saveMedidas() {
+function saveMedidas() {
     var date = document.getElementById('medidaDate').value;
     if (!date) { showBanner('Selecciona una fecha', 'err'); return; }
     var campos = ['hombros','pecho','biceps','cintura','muslo','gemelo'];
@@ -832,11 +836,8 @@ async function saveMedidas() {
     campos.forEach(function(c){document.getElementById('med-'+c).value='';});
     renderMedidasChart(activeMedida);
     saveActiveUserToCache();
-    showBanner('Guardando medidas...', 'busy');
-    try {
-        await gsPost({ action:'saveMedidas', user:getActiveUid(), data:medidas });
-        showBanner('Medidas guardadas ✓', 'ok');
-    } catch(e) { showBanner('Error al guardar medidas', 'err'); }
+    markUnsaved();
+    showBanner('Medidas guardadas', 'ok');
 }
 function selectMedida(key, btn) {
     document.querySelectorAll('.medida-chip').forEach(function(b){b.classList.remove('active');});
@@ -905,15 +906,7 @@ document.getElementById('importFile').addEventListener('change', async function(
                     localStorage.setItem(keyW(uid), JSON.stringify(ud.workouts || []));
                     localStorage.setItem(keyM(uid), JSON.stringify(ud.medidas  || []));
                 });
-                // Sync all users to GS in background
-                if (SCRIPT_URL) {
-                    for (var i = 0; i < (parsed.users||[]).length; i++) {
-                        var u = parsed.users[i];
-                        var ud = parsed.data[u.id];
-                        try { await gsPost({action:'saveWorkouts',user:u.id,data:ud.workouts||[]}); } catch(e){}
-                        try { await gsPost({action:'saveMedidas', user:u.id,data:ud.medidas ||[]}); } catch(e){}
-                    }
-                }
+                // Data written to localStorage only; use Save button to push to GS
             } else {
                 // Legacy single-user format
                 var ws = Array.isArray(parsed) ? parsed : (parsed.workouts || []);
@@ -921,10 +914,7 @@ document.getElementById('importFile').addEventListener('change', async function(
                 ws = ws.map(function(s){return{id:s.id,date:s.date,exercises:s.exercises||[]};});
                 localStorage.setItem(keyW(getActiveUid()), JSON.stringify(ws));
                 localStorage.setItem(keyM(getActiveUid()), JSON.stringify(ms));
-                if (SCRIPT_URL) {
-                    try { await gsPost({action:'saveWorkouts',user:getActiveUid(),data:ws}); } catch(e){}
-                    try { await gsPost({action:'saveMedidas', user:getActiveUid(),data:ms}); } catch(e){}
-                }
+                // Data written to localStorage only; use Save button to push to GS
             }
 
             // Set active user to first user in imported file
@@ -938,7 +928,8 @@ document.getElementById('importFile').addEventListener('change', async function(
             renderUserDropdown();
             renderUserListConfig();
             refreshAllUI();
-            showBanner('Importación completada ✓', 'ok');
+            markUnsaved(); // imported data not yet pushed to GS
+            showBanner('Importado ✓ — pulsa Guardar para subir a Google Sheets', 'ok');
         } catch(err) {
             showBanner('Error en importación: ' + err.message, 'err');
         }
@@ -947,42 +938,93 @@ document.getElementById('importFile').addEventListener('change', async function(
     e.target.value = ''; // allow re-import same file
 });
 
-// ── GS SYNC (background) ─────────────────────────────────────────
-// syncToken ensures stale responses from a previous user are discarded.
+// ── UNSAVED CHANGES INDICATOR ────────────────────────────────────
+var _hasUnsaved = false;
+function markUnsaved() {
+    _hasUnsaved = true;
+    var btn = document.getElementById('btnSave');
+    if (btn) btn.classList.add('has-changes');
+}
+function markSaved() {
+    _hasUnsaved = false;
+    var btn = document.getElementById('btnSave');
+    if (btn) btn.classList.remove('has-changes');
+}
+
+// ── REFRESH: load active user data from GS ────────────────────────
 var _syncToken = 0;
+async function gsRefresh() {
+    if (!SCRIPT_URL) { showBanner('Configura la URL de Google Sheets en Config', 'err'); return; }
 
-async function syncFromGS() {
-    if (!SCRIPT_URL) { setSyncStatus('err', 'Sin URL — ve a Config'); return; }
+    var uid   = getActiveUid();          // snapshot of user at call time
+    var token = ++_syncToken;            // unique token for this request
+    var btn   = document.getElementById('btnRefresh');
+    if (btn) btn.style.opacity = '0.5';
 
-    // Capture the user and token at call time
-    var uid   = getActiveUid();
-    var token = ++_syncToken;
-
-    setSyncStatus('spin', 'Sincronizando...');
-    showBanner('Sincronizando con Google...', 'busy');
-
+    setSyncStatus('spin', 'Cargando...');
+    showBanner('Cargando desde Google Sheets...', 'busy');
     try {
         var res = await Promise.all([gsGet('getWorkouts', uid), gsGet('getMedidas', uid)]);
 
-        // CRITICAL: discard response if user changed or a newer sync started
-        if (token !== _syncToken) return;
-        if (uid  !== getActiveUid()) return;
+        // ── GUARD: discard stale response if user changed ──────────
+        if (token !== _syncToken)   return; // a newer Refresh was triggered
+        if (uid !== getActiveUid()) return; // user changed while waiting
 
-        workouts = (res[0].data || []).map(function(s){return Object.assign({},s,{date:normDate(s.date)});});
-        medidas  = (res[1].data || []).map(function(m){return Object.assign({},m,{date:normDate(m.date)});});
-        saveActiveUserToCache();
+        // Safe to write — we are still on the same user
+        var freshW = (res[0].data || []).map(function(s){ return Object.assign({}, s, {date: normDate(s.date)}); });
+        var freshM = (res[1].data || []).map(function(m){ return Object.assign({}, m, {date: normDate(m.date)}); });
+
+        // Write to the specific user's localStorage key (not the active one, to be explicit)
+        localStorage.setItem(keyW(uid), JSON.stringify(freshW));
+        localStorage.setItem(keyM(uid), JSON.stringify(freshM));
+
+        // Update global state only if still active
+        workouts = freshW;
+        medidas  = freshM;
+
+        markSaved();
         updateExerciseSelectors();
-
-        // Refresh visible section with fresh data
         var active = document.querySelector('main section:not(.hidden)');
         if (active) triggerSectionRender(active.id.replace('sec-', ''));
-
-        setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}));
-        showBanner('Sincronizado ✓', 'ok');
+        setSyncStatus('ok', 'Actualizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
+        showBanner('Datos actualizados ✓', 'ok');
     } catch(e) {
-        if (token !== _syncToken) return; // ignore errors from stale requests
-        setSyncStatus('err', 'Sin conexión · caché local');
-        showBanner('Sin conexión — usando caché', 'err');
+        if (token !== _syncToken) return; // stale error, ignore silently
+        setSyncStatus('err', 'Error al conectar con Google Sheets');
+        showBanner('Sin conexión con Google Sheets', 'err');
+    } finally {
+        if (btn) btn.style.opacity = ''; // always restore button
+    }
+}
+
+// ── SAVE ALL: push ALL users' data to GS ─────────────────────────
+async function gsSaveAll() {
+    if (!SCRIPT_URL) { showBanner('Configura la URL de Google Sheets en Config', 'err'); return; }
+
+    var btn = document.getElementById('btnSave');
+    if (btn) btn.style.opacity = '0.5';
+    showBanner('Guardando en Google Sheets...', 'busy');
+    setSyncStatus('spin', 'Guardando...');
+
+    var users  = getUsers();
+    var errors = 0;
+    for (var i = 0; i < users.length; i++) {
+        var u  = users[i];
+        var ws, ms;
+        try { ws = JSON.parse(localStorage.getItem(keyW(u.id)) || '[]'); } catch(e) { ws = []; }
+        try { ms = JSON.parse(localStorage.getItem(keyM(u.id)) || '[]'); } catch(e) { ms = []; }
+        try { await gsPost({ action: 'saveWorkouts', user: u.id, data: ws }); } catch(e) { errors++; }
+        try { await gsPost({ action: 'saveMedidas',  user: u.id, data: ms }); } catch(e) { errors++; }
+    }
+
+    if (btn) btn.style.opacity = '';
+    if (errors === 0) {
+        markSaved();
+        setSyncStatus('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
+        showBanner('Guardado en Google Sheets ✓', 'ok');
+    } else {
+        setSyncStatus('err', 'Error al guardar');
+        showBanner('Error al guardar (' + errors + ' fallos)', 'err');
     }
 }
 
@@ -1021,8 +1063,7 @@ async function syncFromGS() {
     if (SCRIPT_URL) setSyncStatus('ok', 'URL configurada');
     else setSyncStatus('err', 'Sin URL — ve a Config');
 
-    // Sync from GS in background
-    syncFromGS();
+    // No auto-sync on boot: user presses Refresh manually
 })();
 </script>
 </body>
