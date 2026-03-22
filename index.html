@@ -185,6 +185,7 @@
     .record-table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:10px; }
     .record-table th { text-align:left; padding:6px 10px; background:#f8fafc; font-size:0.72rem; color:#94a3b8; text-transform:uppercase; }
     .record-table td { padding:7px 10px; border-top:1px solid #f1f5f9; }
+    .muscle-group-header td { background:#e2e8f0; font-weight:700; font-size:0.72rem; color:#475569; text-transform:uppercase; letter-spacing:0.06em; padding:5px 10px; }
 
     /* ── MEDIDAS ── */
     .medida-chip { padding:6px 14px; border-radius:16px; border:2px solid #e2e8f0; background:white; cursor:pointer; font-size:0.8rem; font-weight:600; color:#64748b; transition:all 0.15s; }
@@ -437,7 +438,6 @@
         <div class="card">
             <h3 style="margin:0 0 15px">Estadísticas Globales</h3>
             <div id="statsContent"></div>
-            <canvas id="volChart" style="margin-top:20px"></canvas>
         </div>
     </section>
 
@@ -491,7 +491,6 @@ var selectedProgressUsers = [];
 var progressMode = 'kg';   // 'kg' | 'reps'
 var USER_COLORS = ['#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2','#db2777'];
 var chartInstance;
-var volChartInst;
 
 // ── MEDIDAS ───────────────────────────────────────────────────────
 var activeMedida     = 'hombros';
@@ -531,6 +530,23 @@ function fixSessionsEncoding(sessions) {
             })
         });
     });
+}
+
+var MUSCLE_ORDER = ['Pecho', 'Espalda', 'Hombro', 'Pierna', 'Brazo', 'Otros'];
+function getMuscleGroup(name) {
+    var n = (name || '').toLowerCase()
+        .replace(/[áàâä]/g,'a').replace(/[éèêë]/g,'e')
+        .replace(/[íìîï]/g,'i').replace(/[óòôö]/g,'o')
+        .replace(/[úùûü]/g,'u').replace(/ñ/g,'n');
+    if (/sentadilla|leg press|femoral|cuadricep|prensa pierna|hip thrust|glut|gemelo|pantorrilla|zancada|peso muerto|rdl|isquio|lunges/.test(n)) return 'Pierna';
+    if (/press militar|hombro|deltoid|elevacion|vuelo lateral|vuelo frontal|vuelo posterior|arnold|face pull/.test(n)) return 'Hombro';
+    if (/jalon|remo|dominada|espalda|pulldown|pull.up|hiperextension/.test(n)) return 'Espalda';
+    if (/bicep|curl|concentrado|predicador|martillo|rosca directa/.test(n)) return 'Brazo';
+    if (/tricep|frances|patada|fondos tricep|cuerda/.test(n)) return 'Brazo';
+    if (/pecho|banca|inclinado|plano|apertura|fondos|push.?up/.test(n)) return 'Pecho';
+    if (/press/.test(n)) return 'Pecho';
+    if (/polea/.test(n)) return 'Espalda';
+    return 'Otros';
 }
 
 // ================================================================
@@ -743,7 +759,6 @@ function doLogout() {
 
     // Destroy charts
     if (chartInstance)   { chartInstance.destroy();   chartInstance   = null; }
-    if (volChartInst)    { volChartInst.destroy();    volChartInst    = null; }
     if (medidaChartInst) { medidaChartInst.destroy(); medidaChartInst = null; }
 
     // Hide app
@@ -1611,48 +1626,29 @@ function renderMedidasChart(key) {
 
 function renderStats() {
     var totalS = workouts.length;
-    var totalE = 0, totalV = 0;
-    var exMap = {};
-    workouts.forEach(function(s) {
-        s.exercises.forEach(function(e) {
-            totalE++;
-            var v = (parseFloat(e.weight)||0) * (parseFloat(e.sets)||0) * (parseFloat(e.reps)||0);
-            totalV += v;
-            exMap[e.name] = (exMap[e.name]||0) + 1;
-        });
-    });
+    var totalE = 0;
+    workouts.forEach(function(s) { totalE += (s.exercises || []).length; });
+
     var el = document.getElementById('statsContent');
     if (!el) return;
     el.innerHTML = '<div class="stat-cards">'
         + '<div class="stat-card"><div class="stat-emoji">\ud83d\uddd3</div><div class="stat-val">' + totalS + '</div><div class="stat-lbl">Sesiones</div></div>'
         + '<div class="stat-card"><div class="stat-emoji">\ud83d\udcaa</div><div class="stat-val">' + totalE + '</div><div class="stat-lbl">Ejercicios</div></div>'
-        + '<div class="stat-card"><div class="stat-emoji">\u2696</div><div class="stat-val">' + (totalV/1000).toFixed(1) + 't</div><div class="stat-lbl">Volumen total</div></div>'
-        + '<div class="stat-card"><div class="stat-emoji">\ud83c\udfaf</div><div class="stat-val">' + Object.keys(exMap).length + '</div><div class="stat-lbl">Ejercicios únicos</div></div>'
         + '</div>';
 
-    // Records
-    var records = {};
-    workouts.forEach(function(s){ s.exercises.forEach(function(e){ var w=parseFloat(e.weight)||0; if(!records[e.name]||w>records[e.name])records[e.name]=w; }); });
-    var recordArr = Object.keys(records).map(function(n){ return {name:n,w:records[n]}; }).sort(function(a,b){ return b.w-a.w; }).slice(0,10);
-    if (recordArr.length) {
-        el.innerHTML += '<h4 style="margin:16px 0 8px">Records personales</h4>'
-            + '<table class="record-table"><thead><tr><th>Ejercicio</th><th>M\u00e1x. kg</th></tr></thead><tbody>'
-            + recordArr.map(function(r){ return '<tr><td>' + r.name + '</td><td>' + r.w + ' kg</td></tr>'; }).join('')
-            + '</tbody></table>';
-    }
-
-    // 1RM estimado (fórmula de Epley: 1RM = w * (1 + r/30))
-    var rmByEx = {};  // { lastDate, lastW, lastS, lastR, lastRM }
+    // Resumen personal: 1RM por ejercicio (Epley: 1RM = w*(1+r/30))
+    var rmByEx = {};
     var sorted = workouts.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
     sorted.forEach(function(s) {
         s.exercises.forEach(function(e) {
+            var name = fixEncoding(e.name);
             var w = parseFloat(e.weight) || 0;
             var r = parseFloat(e.reps)   || 0;
             var st = parseFloat(e.sets)  || 0;
             if (w <= 0 || r <= 0) return;
             var rm = r === 1 ? w : parseFloat((w * (1 + r / 30)).toFixed(1));
-            if (!rmByEx[e.name] || s.date >= rmByEx[e.name].lastDate) {
-                rmByEx[e.name] = { lastDate: s.date, lastW: w, lastS: st, lastR: r, lastRM: rm };
+            if (!rmByEx[name] || s.date >= rmByEx[name].lastDate) {
+                rmByEx[name] = { lastDate: s.date, lastW: w, lastS: st, lastR: r, lastRM: rm };
             }
         });
     });
@@ -1662,42 +1658,37 @@ function renderStats() {
         .sort(function(a,b){ return b.lastRM - a.lastRM; });
 
     if (rmArr.length) {
-        var rmRows = rmArr.map(function(x) {
-            var serie = x.lastW + ' kg ' + x.lastS + '\u00d7' + x.lastR;
-            return '<tr>'
-                 + '<td style="font-weight:600">' + x.name + '</td>'
-                 + '<td style="color:#475569">' + serie + '</td>'
-                 + '<td style="font-weight:800;color:var(--primary)">' + x.lastRM.toFixed(1) + ' kg</td>'
-                 + '</tr>';
-        }).join('');
+        // Group by muscle
+        var grouped = {};
+        MUSCLE_ORDER.forEach(function(g){ grouped[g] = []; });
+        rmArr.forEach(function(x) {
+            var g = getMuscleGroup(x.name);
+            if (!grouped[g]) grouped[g] = [];
+            grouped[g].push(x);
+        });
+
+        var rmRows = '';
+        MUSCLE_ORDER.forEach(function(g) {
+            if (!grouped[g] || grouped[g].length === 0) return;
+            rmRows += '<tr class="muscle-group-header"><td colspan="3">' + g + '</td></tr>';
+            grouped[g].forEach(function(x) {
+                var serie = x.lastW + ' kg ' + x.lastS + '\u00d7' + x.lastR;
+                var safeName = x.name.replace(/'/g, "\\'");
+                rmRows += '<tr>'
+                    + '<td><span class="ex-name" onclick="goToProgress(\'' + safeName + '\')">' + x.name + '</span></td>'
+                    + '<td style="color:#475569">' + serie + '</td>'
+                    + '<td style="font-weight:800;color:var(--primary)">' + x.lastRM.toFixed(1) + ' kg</td>'
+                    + '</tr>';
+            });
+        });
+
         el.innerHTML += '<div style="display:flex;align-items:baseline;gap:10px;margin:20px 0 8px">'
-            + '<h4 style="margin:0">1RM estimado</h4>'
+            + '<h4 style="margin:0">Resumen personal</h4>'
             + '<span style="font-size:0.72rem;color:#94a3b8">Epley &mdash; w\u00b7(1+r/30)</span>'
             + '</div>'
             + '<table class="record-table"><thead><tr>'
-            + '<th>Ejercicio</th><th>Última serie</th><th>1RM estimado</th>'
+            + '<th>Ejercicio</th><th>\u00daltima serie</th><th>1RM estimado</th>'
             + '</tr></thead><tbody>' + rmRows + '</tbody></table>';
-    }
-
-    // Weekly volume
-    var weekMap = {};
-    workouts.forEach(function(s) {
-        var d = new Date(s.date + 'T00:00:00');
-        var day = d.getDay(); var diff = (day===0?-6:1) - day;
-        var monday = new Date(d.getTime() + diff*86400000);
-        var wk = monday.toISOString().slice(0,10);
-        var vol = 0;
-        s.exercises.forEach(function(e){ vol += (parseFloat(e.weight)||0)*(parseFloat(e.sets)||0)*(parseFloat(e.reps)||0); });
-        weekMap[wk] = (weekMap[wk]||0) + vol;
-    });
-    var weeks = Object.keys(weekMap).sort().slice(-8);
-    if (weeks.length && document.getElementById('volChart')) {
-        if (volChartInst) volChartInst.destroy();
-        volChartInst = new Chart(document.getElementById('volChart').getContext('2d'), {
-            type:'bar',
-            data:{ labels: weeks.map(function(w){ return 'Sem '+fmtDate(w); }), datasets:[{ label:'Volumen (kg)', data: weeks.map(function(w){ return Math.round(weekMap[w]); }), backgroundColor:'rgba(37,99,235,0.6)', borderColor:'#2563eb', borderWidth:1 }] },
-            options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{title:{display:true,text:'kg'}}} }
-        });
     }
 }
 
