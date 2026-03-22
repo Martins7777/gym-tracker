@@ -11,8 +11,13 @@
     body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--light); }
 
     /* ── LOGIN SCREEN ── */
-    #loginScreen { position:fixed; inset:0; background:linear-gradient(145deg,#0d1b3e 0%,#1e3a8a 35%,#2563eb 62%,#4338ca 85%,#1e1b4b 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; padding:24px; overflow:hidden; }
+    #loginScreen { position:fixed; inset:0; background:linear-gradient(145deg,#0d1b3e 0%,#1e3a8a 35%,#2563eb 62%,#4338ca 85%,#1e1b4b 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; padding:24px; overflow:hidden; transition:opacity 0.28s ease, transform 0.28s ease; }
     #loginScreen.hidden { display:none; }
+    #loginScreen.exiting { opacity:0; transform:scale(1.04) translateY(-6px); pointer-events:none; }
+    @keyframes appSlideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    #appMain.app-enter { animation:appSlideIn 0.28s ease both; }
+    @keyframes loginFadeIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+    #loginScreen.login-enter { animation:loginFadeIn 0.24s ease both; }
     #loginScreen::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(99,102,241,0.25) 0%,transparent 70%); pointer-events:none; }
 
     /* Title */
@@ -186,6 +191,13 @@
     .record-table th { text-align:left; padding:6px 10px; background:#f8fafc; font-size:0.72rem; color:#94a3b8; text-transform:uppercase; }
     .record-table td { padding:7px 10px; border-top:1px solid #f1f5f9; }
     .muscle-group-header td { background:#e2e8f0; font-weight:700; font-size:0.72rem; color:#475569; text-transform:uppercase; letter-spacing:0.06em; padding:5px 10px; }
+    /* Exercise autocomplete dropdown */
+    #exSuggestionsBox { position:absolute; top:calc(100% + 2px); left:0; right:0; background:white; border:1.5px solid #e2e8f0; border-radius:10px; max-height:220px; overflow-y:auto; z-index:500; box-shadow:0 6px 20px rgba(0,0,0,0.12); }
+    #exSuggestionsBox.hidden { display:none; }
+    .ex-sug-item { padding:9px 13px; cursor:pointer; font-size:0.88rem; color:#1e293b; border-bottom:1px solid #f1f5f9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ex-sug-item:last-child { border-bottom:none; }
+    .ex-sug-item:hover { background:#eff6ff; color:var(--primary); }
+    .ex-sug-match { font-weight:700; color:var(--primary); }
 
     /* ── MEDIDAS ── */
     .medida-chip { padding:6px 14px; border-radius:16px; border:2px solid #e2e8f0; background:white; cursor:pointer; font-size:0.8rem; font-weight:600; color:#64748b; transition:all 0.15s; }
@@ -325,8 +337,8 @@
                 <div><label>Fecha</label><input type="date" id="workoutDate"></div>
                 <div style="position:relative">
                     <label>Ejercicio</label>
-                    <input type="text" id="exName" placeholder="Nombre del ejercicio" autocomplete="off" list="exHistoryList">
-                    <datalist id="exHistoryList"></datalist>
+                    <input type="text" id="exName" placeholder="Nombre del ejercicio" autocomplete="off">
+                    <div id="exSuggestionsBox" class="hidden"></div>
                 </div>
                 <div><label>Peso (kg)</label><input type="number" step="0.5" id="exWeight" placeholder="0"></div>
                 <div><label>Series</label><input type="number" id="exSets" placeholder="0"></div>
@@ -532,6 +544,47 @@ function fixSessionsEncoding(sessions) {
     });
 }
 
+var allExerciseNames = [];
+
+function buildAllExerciseNames() {
+    var names = {};
+    workouts.forEach(function(s) {
+        s.exercises.forEach(function(e) { names[fixEncoding(e.name)] = true; });
+    });
+    Object.keys(allWorkoutsMap).forEach(function(uid) {
+        (allWorkoutsMap[uid] || []).forEach(function(s) {
+            s.exercises.forEach(function(e) { names[fixEncoding(e.name)] = true; });
+        });
+    });
+    allExerciseNames = Object.keys(names).sort();
+}
+
+function showExSuggestions(query) {
+    var box = document.getElementById('exSuggestionsBox');
+    if (!box || allExerciseNames.length === 0) return;
+    var q = (query || '').toLowerCase().trim();
+    var filtered = q.length === 0
+        ? allExerciseNames.slice(0, 30)
+        : allExerciseNames.filter(function(n) { return n.toLowerCase().indexOf(q) !== -1; });
+    if (filtered.length === 0) { box.classList.add('hidden'); return; }
+    box.innerHTML = filtered.slice(0, 25).map(function(n) {
+        var display = n;
+        if (q.length > 0) {
+            var idx = n.toLowerCase().indexOf(q);
+            display = n.slice(0, idx)
+                + '<span class="ex-sug-match">' + n.slice(idx, idx + q.length) + '</span>'
+                + n.slice(idx + q.length);
+        }
+        return '<div class="ex-sug-item" data-name="' + n.replace(/"/g, '&quot;') + '">' + display + '</div>';
+    }).join('');
+    box.classList.remove('hidden');
+}
+
+function hideExSuggestions() {
+    var box = document.getElementById('exSuggestionsBox');
+    if (box) box.classList.add('hidden');
+}
+
 var MUSCLE_ORDER = ['Pecho', 'Espalda', 'Hombro', 'Pierna', 'Brazo', 'Otros'];
 function getMuscleGroup(name) {
     var n = (name || '').toLowerCase()
@@ -684,17 +737,27 @@ function completeLogin(role, uid, name) {
     SESSION_ROLE = role;
     SESSION_UID  = uid;
     SESSION_NAME = name;
-
-    // Persist session (cleared when browser tab closes)
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: role, uid: uid, name: name }));
 
-    // Show app
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('appNav').classList.remove('hidden');
-    document.getElementById('appMain').classList.remove('hidden');
-    document.getElementById('userBadge').classList.remove('hidden');
+    var ls   = document.getElementById('loginScreen');
+    var nav  = document.getElementById('appNav');
+    var main = document.getElementById('appMain');
+    var badge = document.getElementById('userBadge');
 
-    postLoginInit();
+    ls.classList.add('exiting');
+    setTimeout(function() {
+        ls.classList.add('hidden');
+        ls.classList.remove('exiting');
+        nav.classList.remove('hidden');
+        main.classList.remove('hidden');
+        badge.classList.remove('hidden');
+        main.classList.add('app-enter');
+        main.addEventListener('animationend', function h() {
+            main.classList.remove('app-enter');
+            main.removeEventListener('animationend', h);
+        });
+        postLoginInit();
+    }, 280);
 }
 
 async function postLoginInit() {
@@ -738,6 +801,11 @@ async function postLoginInit() {
         updateExerciseSelectors();
         setSyncStatus('ok', 'Listo · ' + new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' }));
         showBanner('Bienvenido/a, ' + SESSION_NAME + ' \u2713', 'ok');
+
+        // Background: load all users' exercises for autocomplete (non-blocking)
+        if (!allWorkoutsLoaded) {
+            gsLoadAllWorkouts().then(function() { buildAllExerciseNames(); }).catch(function() {});
+        }
     } catch(e) {
         setSyncStatus('err', 'Error de conexión');
         showBanner('Error al cargar datos: ' + e.message, 'err');
@@ -772,7 +840,10 @@ function doLogout() {
     // Reset login form
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginError').classList.add('hidden');
-    document.getElementById('loginScreen').classList.remove('hidden');
+    var ls = document.getElementById('loginScreen');
+    ls.classList.remove('hidden');
+    ls.classList.add('login-enter');
+    ls.addEventListener('animationend', function h() { ls.classList.remove('login-enter'); ls.removeEventListener('animationend', h); });
 
     initLoginScreen();
 }
@@ -1262,11 +1333,7 @@ function saveEdit(sid, eid, section) {
 }
 
 function updateExerciseSelectors() {
-    var names = {};
-    workouts.forEach(function(s) { s.exercises.forEach(function(e) { names[e.name] = true; }); });
-    var sorted = Object.keys(names).sort();
-    var dl = document.getElementById('exHistoryList');
-    if (dl) dl.innerHTML = sorted.map(function(n) { return '<option value="' + n + '">'; }).join('');
+    buildAllExerciseNames();
 }
 
 function updateProgressExerciseSelector() {
@@ -1544,9 +1611,34 @@ function renderExHistoryPanel(name) {
         + '</tbody></table>';
 }
 
-document.getElementById('exName').addEventListener('input', function() {
-    renderExHistoryPanel(this.value.trim());
-});
+(function() {
+    var inp = document.getElementById('exName');
+    var box = document.getElementById('exSuggestionsBox');
+
+    inp.addEventListener('focus', function() { showExSuggestions(this.value); });
+    inp.addEventListener('input', function() {
+        showExSuggestions(this.value);
+        renderExHistoryPanel(this.value.trim());
+    });
+    inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.key === 'Enter') hideExSuggestions();
+    });
+
+    box.addEventListener('mousedown', function(e) {
+        var item = e.target.closest('.ex-sug-item');
+        if (!item) return;
+        e.preventDefault(); // prevent blur before selection
+        inp.value = item.dataset.name;
+        hideExSuggestions();
+        renderExHistoryPanel(item.dataset.name);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#exName') && !e.target.closest('#exSuggestionsBox')) {
+            hideExSuggestions();
+        }
+    });
+})();
 
 // ================================================================
 //  MEDIDAS
@@ -1792,7 +1884,10 @@ function refreshAllUI() {
                 // Show app immediately, data will load from GS
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('appNav').classList.remove('hidden');
-                document.getElementById('appMain').classList.remove('hidden');
+                var _main = document.getElementById('appMain');
+                _main.classList.remove('hidden');
+                _main.classList.add('app-enter');
+                _main.addEventListener('animationend', function h() { _main.classList.remove('app-enter'); _main.removeEventListener('animationend', h); });
                 document.getElementById('userBadge').classList.remove('hidden');
                 renderUserBadge();
                 postLoginInit();
