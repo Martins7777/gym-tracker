@@ -240,7 +240,6 @@
     <div class="nav-links">
         <button onclick="showSection('history')">Historial</button>
         <button onclick="showSection('progress')">Progreso</button>
-        <button onclick="showSection('io')">Config</button>
         <button onclick="showSection('medidas')">Medidas</button>
         <button onclick="showSection('stats')">Estadísticas</button>
         <button onclick="showSection('log')">+Registro</button>
@@ -258,6 +257,9 @@
         <button class="gs-btn" id="btnSave" onclick="gsSave()" title="Guardar en Google Sheets">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             <span>Guardar</span>
+        </button>
+        <button class="gs-btn" onclick="showSection('io')" title="Configuración">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
     </div>
 </nav>
@@ -303,12 +305,20 @@
         <div class="card">
             <h3 style="margin:0 0 10px">Progreso por Ejercicio</h3>
             <div id="progressUserSelector"></div>
-            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:15px">
-                <div style="flex:1;min-width:150px">
+            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
+                <div style="flex:2;min-width:150px">
                     <label>Ejercicio</label>
-                    <select id="progressSelect" onchange="renderChart()"><option>—</option></select>
+                    <select id="progressSelect" onchange="renderChart()"><option value="">— Elige ejercicio —</option></select>
+                </div>
+                <div style="min-width:110px">
+                    <label>Métrica</label>
+                    <select id="progressModeSelect" onchange="progressMode=this.value;renderChart()">
+                        <option value="kg">Peso (kg)</option>
+                        <option value="reps">Repeticiones</option>
+                    </select>
                 </div>
             </div>
+            <div id="chartLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;font-size:0.8rem;font-weight:700;"></div>
             <canvas id="progressChart"></canvas>
             <div id="exerciseSpecificHistory"></div>
         </div>
@@ -408,8 +418,9 @@
 // ================================================================
 
 // ── GS CONFIG ────────────────────────────────────────────────────
-var GS_URL_KEY = 'gym_gs_url';
-var SCRIPT_URL = localStorage.getItem(GS_URL_KEY) || '';
+var GS_URL_KEY    = 'gym_gs_url';
+var GS_USERS_KEY  = 'gym_users_cache';
+var SCRIPT_URL    = localStorage.getItem(GS_URL_KEY) || '';
 
 // ── AUTH STATE (sourced from sessionStorage) ──────────────────────
 var SESSION_KEY  = 'gym_session';
@@ -430,6 +441,7 @@ var medidas  = [];
 
 // ── PROGRESS / CHARTS ─────────────────────────────────────────────
 var selectedProgressUsers = [];
+var progressMode = 'kg';   // 'kg' | 'reps'
 var USER_COLORS = ['#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2','#db2777'];
 var chartInstance;
 var volChartInst;
@@ -453,6 +465,25 @@ function getContextUid() {
 // ── HELPER: user initials ─────────────────────────────────────────
 function initials(name) {
     return (name || '?').split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0,2);
+}
+
+// ================================================================
+//  ENCODING HELPERS
+// ================================================================
+
+// Fix Mojibake: UTF-8 bytes read as Latin-1 (e.g. "ExtensiÃ³n" → "Extensión")
+function fixEncoding(s) {
+    if (typeof s !== 'string' || s.indexOf('\xC3') === -1) return s;
+    try { return decodeURIComponent(escape(s)); } catch(e) { return s; }
+}
+function fixSessionsEncoding(sessions) {
+    return sessions.map(function(s) {
+        return Object.assign({}, s, {
+            exercises: (s.exercises || []).map(function(e) {
+                return Object.assign({}, e, { name: fixEncoding(e.name) });
+            })
+        });
+    });
 }
 
 // ================================================================
@@ -490,46 +521,61 @@ async function gsPost(body) {
 //  AUTH — LOGIN SCREEN
 // ================================================================
 
+function populateLoginSelect(users) {
+    var sel = document.getElementById('loginUserSelect');
+    sel.innerHTML = '<option value="">Selecciona usuario...</option>';
+    users.forEach(function(u) {
+        var o = document.createElement('option');
+        o.value = u.id;
+        o.textContent = u.name;
+        sel.appendChild(o);
+    });
+    var adminOpt = document.createElement('option');
+    adminOpt.value = 'admin';
+    adminOpt.textContent = 'Admin';
+    sel.appendChild(adminOpt);
+}
+
 function initLoginScreen() {
-    document.getElementById('loginLoading').classList.remove('hidden');
     document.getElementById('loginForm').classList.add('hidden');
     document.getElementById('loginNoUrl').classList.add('hidden');
     document.getElementById('loginError').classList.add('hidden');
+    document.getElementById('loginLoading').classList.add('hidden');
 
     if (!SCRIPT_URL) {
-        document.getElementById('loginLoading').classList.add('hidden');
         document.getElementById('loginNoUrl').classList.remove('hidden');
         return;
     }
 
+    // Show form immediately using cached users if available
+    var cached = [];
+    try { cached = JSON.parse(localStorage.getItem(GS_USERS_KEY) || '[]'); } catch(e) {}
+
+    if (cached.length > 0) {
+        populateLoginSelect(cached);
+        document.getElementById('loginForm').classList.remove('hidden');
+    } else {
+        document.getElementById('loginLoading').classList.remove('hidden');
+    }
+
+    // Always refresh users from GS in the background
     gsGet('getUsers', '').then(function(res) {
         var users = res.data || [];
-        var sel   = document.getElementById('loginUserSelect');
-        sel.innerHTML = '<option value="">Selecciona usuario...</option>';
-        users.forEach(function(u) {
-            var o = document.createElement('option');
-            o.value = u.id;
-            o.textContent = u.name;
-            sel.appendChild(o);
-        });
-        // Admin option always at the bottom
-        var adminOpt = document.createElement('option');
-        adminOpt.value = 'admin';
-        adminOpt.textContent = 'Admin';
-        sel.appendChild(adminOpt);
-
+        localStorage.setItem(GS_USERS_KEY, JSON.stringify(users));
+        populateLoginSelect(users);
         document.getElementById('loginLoading').classList.add('hidden');
         document.getElementById('loginForm').classList.remove('hidden');
     }).catch(function(e) {
         document.getElementById('loginLoading').classList.add('hidden');
+        if (cached.length > 0) return; // already showing form with cache, silent fail
         var errEl = document.getElementById('loginError');
         var msg = e.message || '';
         if (msg.indexOf('desconocida') !== -1 || msg.indexOf('unknown') !== -1) {
-            errEl.textContent = 'El script de Google no está actualizado. Copia el código de google-appscript.txt en script.google.com y haz una NUEVA implementación.';
+            errEl.textContent = 'El script de Google no está actualizado. Copia el código nuevo en script.google.com y haz una NUEVA implementación.';
         } else if (msg.indexOf('Failed to fetch') !== -1 || msg.indexOf('NetworkError') !== -1 || msg.indexOf('aborted') !== -1) {
-            errEl.textContent = 'No se puede conectar con Google. Comprueba que la URL es correcta y que el script está publicado como "Cualquier usuario".';
+            errEl.textContent = 'Sin conexión a Google. Verifica la URL y que el script esté publicado como "Cualquier usuario".';
         } else {
-            errEl.textContent = 'Error al conectar: ' + msg + '. Verifica la URL y que el script esté actualizado.';
+            errEl.textContent = 'Error al conectar: ' + msg;
         }
         errEl.classList.remove('hidden');
         document.getElementById('loginNoUrl').classList.remove('hidden');
@@ -818,7 +864,7 @@ async function gsRefreshUser(uid) {
     try {
         var res = await Promise.all([gsGet('getWorkouts', uid), gsGet('getMedidas', uid)]);
         if (token !== _syncToken) return; // stale
-        workouts = (res[0].data || []).map(function(s){ return Object.assign({}, s, { date: normDate(s.date) }); });
+        workouts = fixSessionsEncoding((res[0].data || []).map(function(s){ return Object.assign({}, s, { date: normDate(s.date) }); }));
         medidas  = (res[1].data || []).map(function(m){ return Object.assign({}, m, { date: normDate(m.date) }); });
     } catch(e) {
         if (token !== _syncToken) return;
@@ -835,9 +881,9 @@ async function gsLoadAllWorkouts() {
         var raw = res.data || {};
         allWorkoutsMap = {};
         Object.keys(raw).forEach(function(uid) {
-            allWorkoutsMap[uid] = (raw[uid] || []).map(function(s){
+            allWorkoutsMap[uid] = fixSessionsEncoding((raw[uid] || []).map(function(s){
                 return Object.assign({}, s, { date: normDate(s.date) });
-            });
+            }));
         });
         allWorkoutsLoaded = true;
     } catch(e) {
@@ -1262,13 +1308,43 @@ function renderProgressUserSelector() {
     el.innerHTML = html;
 }
 
+// Plugin: vertical kg labels inside reps bars
+var _kgLabelPlugin = {
+    id: 'kgLabels',
+    afterDatasetsDraw: function(chart) {
+        var ctx = chart.ctx;
+        chart.data.datasets.forEach(function(ds, i) {
+            if (!ds.kgLabels) return;
+            var meta = chart.getDatasetMeta(i);
+            meta.data.forEach(function(bar, j) {
+                var kg = ds.kgLabels[j];
+                if (kg === null || kg === undefined || kg === 0) return;
+                var h = Math.abs((bar.base || 0) - bar.y);
+                if (h < 20) return;
+                ctx.save();
+                ctx.font = '700 9px sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.translate(bar.x, bar.y + h / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText(kg + ' kg', 0, 0);
+                ctx.restore();
+            });
+        });
+    }
+};
+
 function renderChart() {
-    var sel  = document.getElementById('progressSelect');
-    var name = sel ? sel.value : '';
-    var hist = document.getElementById('exerciseSpecificHistory');
+    var sel      = document.getElementById('progressSelect');
+    var name     = sel ? sel.value : '';
+    var hist     = document.getElementById('exerciseSpecificHistory');
+    var legendEl = document.getElementById('chartLegend');
+    var isKg     = (progressMode === 'kg');
 
     if (!name || name === '— Elige ejercicio —') {
         if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+        if (legendEl) legendEl.innerHTML = '';
         if (hist) hist.innerHTML = '';
         return;
     }
@@ -1276,7 +1352,7 @@ function renderChart() {
     // Build points per user
     var ptsByUser = {};
     var allPoints = [];
-    selectedProgressUsers.forEach(function(uid, uidx) {
+    selectedProgressUsers.forEach(function(uid) {
         var pts = [];
         getWorkoutsForUser(uid).forEach(function(s) {
             s.exercises.forEach(function(e) {
@@ -1286,7 +1362,6 @@ function renderChart() {
             });
         });
         pts.sort(function(a,b){ return a.date.localeCompare(b.date); });
-        // Keep highest weight per date
         var byDate = {};
         pts.forEach(function(p) { if (!byDate[p.date] || p.weight > byDate[p.date].weight) byDate[p.date] = p; });
         ptsByUser[uid] = Object.values ? Object.values(byDate) : Object.keys(byDate).map(function(k){ return byDate[k]; });
@@ -1294,58 +1369,71 @@ function renderChart() {
         allPoints = allPoints.concat(ptsByUser[uid]);
     });
 
-    var ctx = document.getElementById('progressChart').getContext('2d');
+    // Union of all dates
+    var allDatesMap = {};
+    allPoints.forEach(function(p){ allDatesMap[p.date] = true; });
+    var dates  = Object.keys(allDatesMap).sort();
+    var labels = dates.map(fmtDate);
+
+    // Build datasets + legend items
+    var datasets = [];
+    var legendItems = [];
+    selectedProgressUsers.forEach(function(uid, uidx) {
+        var color = USER_COLORS[uidx % USER_COLORS.length];
+        var uName = (allUsers.find(function(u){ return u.id===uid; })||{name:uid}).name;
+        var byDate = {};
+        (ptsByUser[uid]||[]).forEach(function(p){ byDate[p.date] = p; });
+        legendItems.push({ name: uName, color: color });
+
+        if (isKg) {
+            datasets.push({
+                type: 'line', label: uName,
+                data: dates.map(function(d){ return byDate[d] ? byDate[d].weight : null; }),
+                borderColor: color, backgroundColor: color + '18',
+                pointBackgroundColor: color, tension: 0.3, pointRadius: 5, spanGaps: true, fill: false
+            });
+        } else {
+            datasets.push({
+                type: 'bar', label: uName,
+                data: dates.map(function(d){ return byDate[d] ? byDate[d].reps : null; }),
+                kgLabels: dates.map(function(d){ return byDate[d] ? byDate[d].weight : null; }),
+                backgroundColor: color + 'CC', borderColor: color, borderWidth: 1
+            });
+        }
+    });
+
+    var ctxEl = document.getElementById('progressChart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctxEl, {
+        data: { labels: labels, datasets: datasets },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: isKg
+                ? { y: { title:{ display:true, text:'Peso (kg)' } } }
+                : { y: { title:{ display:true, text:'Repeticiones' }, ticks:{ stepSize:1 } } }
+        },
+        plugins: isKg ? [] : [_kgLabelPlugin]
+    });
 
-    var isSingle = selectedProgressUsers.length === 1;
-
-    if (isSingle) {
-        var uid  = selectedProgressUsers[0];
-        var pts  = ptsByUser[uid] || [];
-        var lbls = pts.map(function(p){ return fmtDate(p.date); });
-        chartInstance = new Chart(ctx, {
-            data: {
-                labels: lbls,
-                datasets: [
-                    { type:'line', label:'Peso (kg)', data: pts.map(function(p){ return p.weight; }), borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.08)', yAxisID:'yW', tension:0.3, pointRadius:4, fill:true },
-                    { type:'bar',  label:'Reps',      data: pts.map(function(p){ return p.reps; }),   borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,0.2)',   yAxisID:'yR' }
-                ]
-            },
-            options: { responsive:true, scales: { yW:{ type:'linear', position:'left', title:{display:true,text:'kg'} }, yR:{ type:'linear', position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'reps'} } }, plugins:{legend:{position:'top'}} }
-        });
-    } else {
-        // Multi-user: union of dates, one line per user
-        var allDates = {};
-        allPoints.forEach(function(p){ allDates[p.date]=true; });
-        var dates = Object.keys(allDates).sort();
-        var datasets = selectedProgressUsers.map(function(uid, uidx) {
-            var uName = (allUsers.find(function(u){ return u.id===uid; })||{name:uid}).name;
-            var byDate = {};
-            (ptsByUser[uid]||[]).forEach(function(p){ byDate[p.date]=p.weight; });
-            return {
-                label: uName,
-                data:  dates.map(function(d){ return byDate[d] !== undefined ? byDate[d] : null; }),
-                borderColor:       USER_COLORS[uidx % USER_COLORS.length],
-                backgroundColor:   USER_COLORS[uidx % USER_COLORS.length] + '22',
-                tension: 0.3, pointRadius: 4, spanGaps: true, fill: false
-            };
-        });
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: { labels: dates.map(fmtDate), datasets: datasets },
-            options: { responsive:true, scales:{ y:{ title:{display:true,text:'kg'} } }, plugins:{legend:{position:'top'}} }
-        });
+    // Custom HTML legend (text-only, colored)
+    if (legendEl) {
+        legendEl.innerHTML = legendItems.map(function(item) {
+            return '<span style="color:' + item.color + ';white-space:nowrap">' + item.name + '</span>';
+        }).join('');
     }
 
-    // History table
+    // History table with colored user names
     var multiUser = selectedProgressUsers.length > 1;
     allPoints.sort(function(a,b){ return b.date.localeCompare(a.date); });
-    var tableRows = allPoints.map(function(p, i) {
+    var tableRows = allPoints.map(function(p) {
+        var uidx  = selectedProgressUsers.indexOf(p.uid);
+        var color = USER_COLORS[uidx >= 0 ? uidx % USER_COLORS.length : 0];
         var uName = (allUsers.find(function(u){ return u.id===p.uid; })||{name:p.uid}).name;
         var canEdit = (p.uid === getContextUid());
         return '<tr id="row-prog-' + p.eid + '">'
              + '<td>' + fmtDate(p.date) + '</td>'
-             + (multiUser ? '<td>' + uName + '</td>' : '')
+             + (multiUser ? '<td style="color:' + color + ';font-weight:700">' + uName + '</td>' : '')
              + '<td>' + (p.weight||'—') + ' kg</td>'
              + '<td>' + (p.sets||'—') + '\u00d7' + (p.reps||'—') + '</td>'
              + (canEdit ? '<td><button class="btn-sm btn-edit" onclick="enableEdit(' + p.sid + ',' + p.eid + ',\'prog\')">Editar</button></td>'
@@ -1554,7 +1642,7 @@ document.getElementById('importFile').addEventListener('change', function(e) {
                 ws = Array.isArray(parsed) ? parsed : (parsed.workouts || []);
                 ms = Array.isArray(parsed) ? [] : (parsed.medidas || []);
             }
-            workouts = ws.map(function(s){ return Object.assign({}, s, { date: normDate(s.date) }); });
+            workouts = fixSessionsEncoding(ws.map(function(s){ return Object.assign({}, s, { date: normDate(s.date) }); }));
             medidas  = ms.map(function(m){ return Object.assign({}, m, { date: normDate(m.date) }); });
             markUnsaved();
             refreshAllUI();
