@@ -1641,6 +1641,44 @@ function renderStats() {
             + '</tbody></table>';
     }
 
+    // 1RM estimado (fórmula de Epley: 1RM = w * (1 + r/30))
+    var rmByEx = {};  // { lastDate, lastW, lastS, lastR, lastRM }
+    var sorted = workouts.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+    sorted.forEach(function(s) {
+        s.exercises.forEach(function(e) {
+            var w = parseFloat(e.weight) || 0;
+            var r = parseFloat(e.reps)   || 0;
+            var st = parseFloat(e.sets)  || 0;
+            if (w <= 0 || r <= 0) return;
+            var rm = r === 1 ? w : parseFloat((w * (1 + r / 30)).toFixed(1));
+            if (!rmByEx[e.name] || s.date >= rmByEx[e.name].lastDate) {
+                rmByEx[e.name] = { lastDate: s.date, lastW: w, lastS: st, lastR: r, lastRM: rm };
+            }
+        });
+    });
+
+    var rmArr = Object.keys(rmByEx)
+        .map(function(n){ return Object.assign({ name: n }, rmByEx[n]); })
+        .sort(function(a,b){ return b.lastRM - a.lastRM; });
+
+    if (rmArr.length) {
+        var rmRows = rmArr.map(function(x) {
+            var serie = x.lastW + ' kg ' + x.lastS + '\u00d7' + x.lastR;
+            return '<tr>'
+                 + '<td style="font-weight:600">' + x.name + '</td>'
+                 + '<td style="color:#475569">' + serie + '</td>'
+                 + '<td style="font-weight:800;color:var(--primary)">' + x.lastRM.toFixed(1) + ' kg</td>'
+                 + '</tr>';
+        }).join('');
+        el.innerHTML += '<div style="display:flex;align-items:baseline;gap:10px;margin:20px 0 8px">'
+            + '<h4 style="margin:0">1RM estimado</h4>'
+            + '<span style="font-size:0.72rem;color:#94a3b8">Epley &mdash; w\u00b7(1+r/30)</span>'
+            + '</div>'
+            + '<table class="record-table"><thead><tr>'
+            + '<th>Ejercicio</th><th>Última serie</th><th>1RM estimado</th>'
+            + '</tr></thead><tbody>' + rmRows + '</tbody></table>';
+    }
+
     // Weekly volume
     var weekMap = {};
     workouts.forEach(function(s) {
