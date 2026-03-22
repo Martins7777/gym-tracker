@@ -11,37 +11,69 @@
     body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--light); }
 
     /* ── LOGIN SCREEN ── */
-    #loginScreen { position:fixed; inset:0; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:9999; padding:16px; }
+    #loginScreen { position:fixed; inset:0; background:linear-gradient(145deg,#0d1b3e 0%,#1e3a8a 35%,#2563eb 62%,#4338ca 85%,#1e1b4b 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; padding:24px; overflow:hidden; }
     #loginScreen.hidden { display:none; }
-    #loginCard { background:white; border-radius:16px; padding:32px 28px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
-    #loginCard h2 { color:var(--primary); text-align:center; margin:0 0 4px 0; font-size:1.5rem; letter-spacing:-0.5px; }
-    #loginCard .login-sub { text-align:center; color:#94a3b8; font-size:0.8rem; margin:0 0 24px 0; }
-    #loginForm label, #loginNoUrl label { display:block; font-size:0.78rem; font-weight:700; color:#64748b; margin-bottom:5px; }
-    #loginForm input, #loginForm select, #loginNoUrl input { width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.95rem; margin-bottom:14px; }
-    #loginForm input:focus, #loginForm select:focus, #loginNoUrl input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
-    #loginBtn { width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer; transition:opacity 0.15s; }
-    #loginBtn:hover { opacity:0.9; }
-    #loginBtn:disabled { opacity:0.5; cursor:default; }
-    #loginError { margin-top:12px; background:#fee2e2; color:#991b1b; border-radius:8px; padding:10px 14px; font-size:0.83rem; font-weight:600; }
+    #loginScreen::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(99,102,241,0.25) 0%,transparent 70%); pointer-events:none; }
+
+    /* Title */
+    #loginHeader { text-align:center; margin-bottom:32px; position:relative; }
+    #loginHeader h1 { font-size:2.4rem; font-weight:900; color:white; letter-spacing:-1.5px; margin:0 0 6px; line-height:1; }
+    #loginHeader p { color:rgba(255,255,255,0.45); font-size:0.82rem; margin:0; letter-spacing:0.08em; text-transform:uppercase; }
+
+    /* Glass card */
+    #loginCard { background:rgba(255,255,255,0.08); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.18); border-radius:20px; padding:28px 24px; width:100%; max-width:360px; position:relative; }
+
+    /* Form labels */
+    #loginForm label, #loginNoUrl label { display:block; font-size:0.73rem; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:5px; letter-spacing:0.05em; text-transform:uppercase; }
+
+    /* Glass inputs */
+    #loginForm input, #loginForm select, #loginNoUrl input {
+        width:100%; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);
+        border-radius:10px; font-size:0.95rem; margin-bottom:14px;
+        background:rgba(255,255,255,0.1); color:white;
+        appearance:none; -webkit-appearance:none;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        background-repeat:no-repeat; background-position:right 12px center; padding-right:34px;
+    }
+    #loginForm input { background-image:none; padding-right:14px; }
+    #loginForm input::placeholder { color:rgba(255,255,255,0.35); }
+    #loginForm input:focus, #loginForm select:focus, #loginNoUrl input:focus { outline:none; border-color:rgba(255,255,255,0.5); box-shadow:0 0 0 3px rgba(255,255,255,0.1); }
+    #loginForm select option { background:#1e3a8a; color:white; }
+
+    /* Login button */
+    #loginBtn { width:100%; padding:13px; background:white; color:#1e3a8a; border:none; border-radius:10px; font-size:1rem; font-weight:800; cursor:pointer; transition:all 0.15s; letter-spacing:-0.3px; }
+    #loginBtn:hover { background:rgba(255,255,255,0.9); transform:translateY(-1px); box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+    #loginBtn:disabled { opacity:0.5; cursor:default; transform:none; box-shadow:none; }
+
+    /* Error */
+    #loginError { margin-top:12px; background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; border-radius:10px; padding:10px 14px; font-size:0.82rem; font-weight:600; }
     #loginError.hidden { display:none; }
-    #loginLoading { text-align:center; padding:20px 0; }
+    #loginLoading { text-align:center; padding:16px 0; }
     #loginLoading.hidden, #loginForm.hidden, #loginNoUrl.hidden { display:none; }
-    .login-spin { width:32px; height:32px; border:3px solid #e2e8f0; border-top-color:var(--primary); border-radius:50%; animation:spin 0.65s linear infinite; margin:0 auto 10px; }
-    #loginNoUrl p { color:#64748b; font-size:0.88rem; text-align:center; margin:0 0 16px 0; }
-    #loginNoUrl button { width:100%; padding:11px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:0.95rem; font-weight:700; cursor:pointer; }
+    .login-spin { width:30px; height:30px; border:3px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:spin 0.65s linear infinite; margin:0 auto 10px; }
+    #loginLoading p { color:rgba(255,255,255,0.5); font-size:0.8rem; margin:0; }
+
+    /* No URL state */
+    #loginNoUrl p { color:rgba(255,255,255,0.55); font-size:0.85rem; text-align:center; margin:0 0 14px 0; line-height:1.5; }
+    #loginNoUrl input { background-image:none !important; padding-right:14px !important; }
+    #loginNoUrl button { width:100%; padding:12px; background:white; color:#1e3a8a; border:none; border-radius:10px; font-size:0.95rem; font-weight:800; cursor:pointer; }
 
     /* ── NAV ── */
-    nav { width:100%; background:var(--dark); color:white; padding:10px; position:fixed; top:0; z-index:1000; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2); }
+    nav { width:100%; background:var(--dark); color:white; padding:8px 12px; position:fixed; top:0; z-index:1000; box-sizing:border-box; display:flex; flex-direction:column; align-items:stretch; gap:7px; box-shadow:0 2px 12px rgba(0,0,0,0.25); }
     nav.hidden { display:none; }
-    nav h2 { color:var(--primary); margin:0; font-size:1.1rem; white-space:nowrap; }
+    .nav-header { display:flex; align-items:center; justify-content:space-between; width:100%; }
+    nav h2 { color:var(--primary); margin:0; font-size:1.05rem; white-space:nowrap; font-weight:800; letter-spacing:-0.5px; }
     .nav-links { display:flex; gap:5px; width:100%; justify-content:center; flex-wrap:wrap; }
-    nav button { padding:8px 12px; border:none; background:#334155; color:white; cursor:pointer; border-radius:6px; font-size:0.8rem; flex:1; min-width:80px; }
+    nav button { padding:7px 12px; border:none; background:#334155; color:white; cursor:pointer; border-radius:6px; font-size:0.8rem; flex:1; min-width:75px; transition:background 0.12s; }
+    nav button:hover { background:#475569; }
+
     @media (min-width:600px) {
-        nav { flex-direction:row; padding:10px 160px 10px 20px; }
-        nav h2 { font-size:1.2rem; }
-        nav button { font-size:0.9rem; flex:none; }
-        .nav-links { width:auto; flex:1; }
-        main { margin-top:80px !important; }
+        nav { flex-direction:row; padding:10px 18px; align-items:center; }
+        .nav-header { display:contents; }   /* h2 & gsButtons become direct nav flex items */
+        nav h2 { font-size:1.15rem; margin-right:4px; }
+        nav button { font-size:0.88rem; flex:none; }
+        .nav-links { width:auto; flex:1; justify-content:flex-start; padding:0 8px; }
+        main { margin-top:72px !important; }
         .grid-inputs { grid-template-columns:2fr 1fr 1fr 1fr !important; }
     }
 
@@ -49,20 +81,34 @@
     #adminBar { display:flex; align-items:center; gap:8px; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:4px 10px; flex-shrink:0; }
     #adminBar.hidden { display:none; }
     #adminBar span { color:rgba(255,255,255,0.6); font-size:0.72rem; white-space:nowrap; }
-    #adminBar select { background:transparent; border:none; color:white; font-weight:700; font-size:0.8rem; cursor:pointer; padding:2px 0; outline:none; max-width:120px; }
+    #adminBar select { background:transparent; border:none; color:white; font-weight:700; font-size:0.8rem; cursor:pointer; padding:2px 0; outline:none; max-width:120px; appearance:none; -webkit-appearance:none; }
     #adminBar select option { background:var(--dark); color:white; }
 
     /* ── GS ACTION BUTTONS ── */
-    #gsButtons { display:flex; gap:6px; flex-shrink:0; align-items:center; }
-    .gs-btn { display:flex; align-items:center; gap:5px; padding:5px 11px; border-radius:16px; border:1px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.1); color:white; font-size:0.72rem; font-weight:600; cursor:pointer; transition:background 0.15s; white-space:nowrap; flex:none; min-width:0; }
-    .gs-btn:hover { background:rgba(255,255,255,0.22); }
+    #gsButtons { display:flex; gap:5px; flex-shrink:0; align-items:center; }
+    .gs-btn { display:flex; align-items:center; gap:5px; padding:5px 10px; border-radius:14px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:white; font-size:0.72rem; font-weight:600; cursor:pointer; transition:background 0.15s; white-space:nowrap; flex:none; }
+    .gs-btn:hover { background:rgba(255,255,255,0.18); }
     .gs-btn.has-changes { border-color:#f59e0b; background:rgba(245,158,11,0.2); }
     .gs-btn.has-changes:hover { background:rgba(245,158,11,0.35); }
     .gs-btn svg { flex-shrink:0; }
-    @media (max-width:599px) { #gsButtons { justify-content:center; } #gsButtons .gs-btn span { display:none; } }
+    @media (max-width:599px) { .gs-btn span { display:none; } }
 
-    main { margin-top:148px; padding:15px; max-width:1000px; width:100%; margin-left:auto; margin-right:auto; }
+    main { margin-top:108px; padding:15px; max-width:1000px; width:100%; margin-left:auto; margin-right:auto; }
     main.hidden { display:none; }
+
+    /* ── PROFESSIONAL SELECTS ── */
+    select {
+        appearance: none; -webkit-appearance: none;
+        background-color: white; color: #1e293b;
+        border: 1.5px solid #e2e8f0; border-radius: 8px;
+        padding: 10px 34px 10px 12px; font-size: 0.9rem; font-weight: 500;
+        cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 11px center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    select:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
+    select:hover { border-color:#94a3b8; }
     .card { background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.05); margin-bottom:20px; }
     .grid-inputs { display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:15px; }
     label { display:block; font-size:0.8rem; font-weight:bold; margin-bottom:5px; color:#64748b; }
@@ -181,14 +227,15 @@
 <!-- LOGIN SCREEN                                                   -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <div id="loginScreen">
+    <div id="loginHeader">
+        <h1>GYM TRACKER AMS</h1>
+        <p>Seguimiento personal de entrenamiento</p>
+    </div>
     <div id="loginCard">
-        <h2>GYM TRACKER AMS</h2>
-        <p class="login-sub">by AMS</p>
-
         <!-- Cargando lista de usuarios -->
         <div id="loginLoading">
             <div class="login-spin"></div>
-            <p style="color:#94a3b8;font-size:0.83rem;margin:0">Conectando con Google Sheets...</p>
+            <p>Conectando con Google Sheets...</p>
         </div>
 
         <!-- Formulario de login -->
@@ -199,7 +246,7 @@
             </select>
             <label>Contraseña</label>
             <input type="password" id="loginPassword" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()">
-            <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Entrar</button>
+            <button id="loginBtn" onclick="doLogin()">Entrar</button>
             <div id="loginError" class="hidden"></div>
         </div>
 
@@ -236,20 +283,9 @@
 <!-- NAV                                                            -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <nav id="appNav" class="hidden">
-    <h2>GYM TRACKER AMS</h2>
-    <div class="nav-links">
-        <button onclick="showSection('history')">Historial</button>
-        <button onclick="showSection('progress')">Progreso</button>
-        <button onclick="showSection('medidas')">Medidas</button>
-        <button onclick="showSection('stats')">Estadísticas</button>
-        <button onclick="showSection('log')">+Registro</button>
-        <button id="btnAdmin" class="hidden" onclick="showSection('admin')" style="background:rgba(245,158,11,0.3);color:#fcd34d;">Admin</button>
-    </div>
-    <div id="adminBar" class="hidden">
-        <span>Contexto:</span>
-        <select id="adminContextSelect" onchange="adminSwitchContext()"></select>
-    </div>
-    <div id="gsButtons">
+    <div class="nav-header">
+        <h2>GYM TRACKER AMS</h2>
+        <div id="gsButtons">
         <button class="gs-btn" id="btnRefresh" onclick="gsRefresh()" title="Cargar datos desde Google Sheets">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
             <span>Refresh</span>
@@ -261,6 +297,19 @@
         <button class="gs-btn" onclick="showSection('io')" title="Configuración">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
+        </div><!-- end #gsButtons -->
+    </div><!-- end .nav-header -->
+    <div class="nav-links">
+        <button onclick="showSection('history')">Historial</button>
+        <button onclick="showSection('progress')">Progreso</button>
+        <button onclick="showSection('medidas')">Medidas</button>
+        <button onclick="showSection('stats')">Estadísticas</button>
+        <button onclick="showSection('log')">+Registro</button>
+        <button id="btnAdmin" class="hidden" onclick="showSection('admin')" style="background:rgba(245,158,11,0.3);color:#fcd34d;">Admin</button>
+    </div>
+    <div id="adminBar" class="hidden">
+        <span>Contexto:</span>
+        <select id="adminContextSelect" onchange="adminSwitchContext()"></select>
     </div>
 </nav>
 
