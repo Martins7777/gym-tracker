@@ -794,7 +794,7 @@ async function postLoginInit() {
 
         renderUserBadge();
         renderUserDropdown();
-        updateExerciseSelectors();
+        refreshAllUI();
         setSyncStatus('ok', 'Listo · ' + new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' }));
         showBanner('Bienvenido/a, ' + SESSION_NAME + ' \u2713', 'ok');
 
