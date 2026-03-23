@@ -785,18 +785,27 @@ async function postLoginInit() {
             setupAdminUI();
         }
 
-        // Load context user data
-        var ctxUid = getContextUid();
-        if (ctxUid) await gsRefreshUser(ctxUid);
-
         // Pre-select all users for Progress
         selectedProgressUsers = allUsers.map(function(u) { return u.id; });
 
+        // Show app immediately
         renderUserBadge();
         renderUserDropdown();
         refreshAllUI();
         setSyncStatus('ok', 'Listo · ' + new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' }));
         showBanner('Bienvenido/a, ' + SESSION_NAME + ' \u2713', 'ok');
+
+        // Background: load context user data (non-blocking)
+        var ctxUid = getContextUid();
+        if (ctxUid) {
+            gsRefreshUser(ctxUid).then(function() {
+                refreshAllUI();
+                setSyncStatus('ok', 'Actualizado · ' + new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' }));
+            }).catch(function(e) {
+                setSyncStatus('err', 'Error al cargar datos');
+                showBanner('Error: ' + e.message, 'err');
+            });
+        }
 
         // Background: load all users' exercises for autocomplete (non-blocking)
         if (!allWorkoutsLoaded) {
