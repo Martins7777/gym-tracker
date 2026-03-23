@@ -370,13 +370,6 @@
                     <label>Ejercicio</label>
                     <select id="progressSelect" onchange="renderChart()"><option value="">— Elige ejercicio —</option></select>
                 </div>
-                <div style="min-width:110px">
-                    <label>Métrica</label>
-                    <select id="progressModeSelect" onchange="progressMode=this.value;renderChart()">
-                        <option value="kg">Peso (kg)</option>
-                        <option value="reps">Repeticiones</option>
-                    </select>
-                </div>
             </div>
             <div id="chartLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;font-size:0.8rem;font-weight:700;"></div>
             <canvas id="progressChart"></canvas>
@@ -678,7 +671,9 @@ function initLoginScreen() {
     gsGet('getUsers', '').then(function(res) {
         var users = res.data || [];
         localStorage.setItem(GS_USERS_KEY, JSON.stringify(users));
+        var prevSel = document.getElementById('loginUserSelect').value;
         populateLoginSelect(users);
+        if (prevSel) document.getElementById('loginUserSelect').value = prevSel;
         document.getElementById('loginLoading').classList.add('hidden');
         document.getElementById('loginForm').classList.remove('hidden');
     }).catch(function(e) {
@@ -1438,26 +1433,23 @@ function renderProgressUserSelector() {
 }
 
 // Plugin: vertical kg labels inside reps bars
-var _kgLabelPlugin = {
-    id: 'kgLabels',
+// Plugin: draws reps label above each point on the weight (kg) line chart
+var _repsLabelPlugin = {
+    id: 'repsLabels',
     afterDatasetsDraw: function(chart) {
         var ctx = chart.ctx;
         chart.data.datasets.forEach(function(ds, i) {
-            if (!ds.kgLabels) return;
+            if (!ds.repsLabels) return;
             var meta = chart.getDatasetMeta(i);
-            meta.data.forEach(function(bar, j) {
-                var kg = ds.kgLabels[j];
-                if (kg === null || kg === undefined || kg === 0) return;
-                var h = Math.abs((bar.base || 0) - bar.y);
-                if (h < 20) return;
+            meta.data.forEach(function(point, j) {
+                var reps = ds.repsLabels[j];
+                if (reps === null || reps === undefined || reps === 0) return;
                 ctx.save();
-                ctx.font = '700 9px sans-serif';
-                ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                ctx.font = '600 10px sans-serif';
+                ctx.fillStyle = ds.borderColor || '#1e293b';
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.translate(bar.x, bar.y + h / 2);
-                ctx.rotate(-Math.PI / 2);
-                ctx.fillText(kg + ' kg', 0, 0);
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(reps + 'r', point.x, point.y - 5);
                 ctx.restore();
             });
         });
@@ -1469,7 +1461,6 @@ function renderChart() {
     var name     = sel ? sel.value : '';
     var hist     = document.getElementById('exerciseSpecificHistory');
     var legendEl = document.getElementById('chartLegend');
-    var isKg     = (progressMode === 'kg');
 
     if (!name || name === '— Elige ejercicio —') {
         if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
@@ -1504,7 +1495,7 @@ function renderChart() {
     var dates  = Object.keys(allDatesMap).sort();
     var labels = dates.map(fmtDate);
 
-    // Build datasets + legend items
+    // Build datasets + legend items (always kg mode, with reps labels above points)
     var datasets = [];
     var legendItems = [];
     selectedProgressUsers.forEach(function(uid, uidx) {
@@ -1514,21 +1505,13 @@ function renderChart() {
         (ptsByUser[uid]||[]).forEach(function(p){ byDate[p.date] = p; });
         legendItems.push({ name: uName, color: color });
 
-        if (isKg) {
-            datasets.push({
-                type: 'line', label: uName,
-                data: dates.map(function(d){ return byDate[d] ? byDate[d].weight : null; }),
-                borderColor: color, backgroundColor: color + '18',
-                pointBackgroundColor: color, tension: 0.3, pointRadius: 5, spanGaps: true, fill: false
-            });
-        } else {
-            datasets.push({
-                type: 'bar', label: uName,
-                data: dates.map(function(d){ return byDate[d] ? byDate[d].reps : null; }),
-                kgLabels: dates.map(function(d){ return byDate[d] ? byDate[d].weight : null; }),
-                backgroundColor: color + 'CC', borderColor: color, borderWidth: 1
-            });
-        }
+        datasets.push({
+            type: 'line', label: uName,
+            data: dates.map(function(d){ return byDate[d] ? byDate[d].weight : null; }),
+            repsLabels: dates.map(function(d){ return byDate[d] ? byDate[d].reps : null; }),
+            borderColor: color, backgroundColor: color + '18',
+            pointBackgroundColor: color, tension: 0.3, pointRadius: 5, spanGaps: true, fill: false
+        });
     });
 
     var ctxEl = document.getElementById('progressChart').getContext('2d');
@@ -1538,11 +1521,10 @@ function renderChart() {
         options: {
             responsive: true,
             plugins: { legend: { display: false } },
-            scales: isKg
-                ? { y: { title:{ display:true, text:'Peso (kg)' } } }
-                : { y: { title:{ display:true, text:'Repeticiones' }, ticks:{ stepSize:1 } } }
+            scales: { y: { title:{ display:true, text:'Peso (kg)' } } },
+            layout: { padding: { top: 20 } }
         },
-        plugins: isKg ? [] : [_kgLabelPlugin]
+        plugins: [_repsLabelPlugin]
     });
 
     // Custom HTML legend (text-only, colored)
@@ -1718,8 +1700,9 @@ function renderMedidasChart(key) {
 
 function renderStats() {
     var totalS = workouts.length;
-    var totalE = 0;
-    workouts.forEach(function(s) { totalE += (s.exercises || []).length; });
+    var uniqueEx = {};
+    workouts.forEach(function(s) { (s.exercises || []).forEach(function(e) { if (e.name) uniqueEx[fixEncoding(e.name)] = true; }); });
+    var totalE = Object.keys(uniqueEx).length;
 
     var el = document.getElementById('statsContent');
     if (!el) return;
