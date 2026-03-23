@@ -334,13 +334,20 @@
     <section id="sec-log">
         <div class="card">
             <h3 style="margin:0 0 15px">Registrar Entrenamiento</h3>
-            <div class="grid-inputs">
+            <!-- Fila 1: Fecha -->
+            <div class="grid-inputs" style="margin-bottom:12px">
                 <div><label>Fecha</label><input type="date" id="workoutDate"></div>
+            </div>
+            <!-- Fila 2: Ejercicio -->
+            <div class="grid-inputs" style="margin-bottom:12px">
                 <div style="position:relative">
                     <label>Ejercicio</label>
                     <input type="text" id="exName" placeholder="Nombre del ejercicio" autocomplete="off">
                     <div id="exSuggestionsBox" class="hidden"></div>
                 </div>
+            </div>
+            <!-- Fila 3: Peso, Series, Reps (3 columnas en desktop y móvil) -->
+            <div class="grid-inputs" style="grid-template-columns:repeat(3,1fr); margin-bottom:15px">
                 <div><label>Peso (kg)</label><input type="number" step="0.5" id="exWeight" placeholder="0"></div>
                 <div><label>Series</label><input type="number" id="exSets" placeholder="0"></div>
                 <div><label>Reps</label><input type="number" id="exReps" placeholder="0"></div>
